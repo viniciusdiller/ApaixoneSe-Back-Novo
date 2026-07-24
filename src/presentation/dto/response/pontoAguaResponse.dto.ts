@@ -21,12 +21,16 @@ export class PontoAguaResponseDto {
   descricao!: string;
 
   @ApiProperty({
-    example: "/public/pontos-agua/praia_de_itauna/imagem_1718046234123.webp",
+    example: "/uploads/pontos-agua/praia_de_itauna/imagem_1718046234123.webp",
     required: false,
   })
   imagemUrl?: string | null;
 
-  @ApiProperty({ type: [String], required: false, example: ["surf", "bandeira azul"] })
+  @ApiProperty({
+    type: [String],
+    required: false,
+    example: ["surf", "bandeira azul"],
+  })
   filtros?: string[] | null;
 
   @ApiProperty({ example: true })
@@ -41,7 +45,10 @@ export class PontoAguaResponseDto {
   @ApiProperty({ example: true })
   quiosques!: boolean;
 
-  @ApiProperty({ example: "Rua Principal, 123 - Centro, Saquarema - RJ", required: false })
+  @ApiProperty({
+    example: "Rua Principal, 123 - Centro, Saquarema - RJ",
+    required: false,
+  })
   endereco?: string | null;
 
   @ApiProperty({ example: -22.9358, required: false })

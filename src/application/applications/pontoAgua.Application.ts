@@ -10,6 +10,8 @@ import { CreatePontoAguaRequestDto } from "../../presentation/dto/request/pontos
 import { UpdatePontoAguaRequestDto } from "../../presentation/dto/request/pontos-agua/updatePontoAguaRequestDto";
 import { TipoPontoAgua } from "@prisma/client";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
+import * as fs from "fs";
+import * as path from "path";
 
 function sanitizarSlug(nome: string): string {
   return nome
@@ -132,7 +134,27 @@ export class PontoAguaApplication {
     const existente = await this.repo.findById(id);
     if (!existente) throw new NotFoundException("Praia/Lagoa não encontrada.");
 
+    this.removerArquivo(existente.imagemUrl);
     await this.repo.delete(id);
+  }
+
+  private removerArquivo(url?: string | null): void {
+    if (!url) return;
+
+    const caminhoRelativo = url.replace(/^\/+/, "");
+    const filePath = path.resolve(process.cwd(), caminhoRelativo);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    const pastaPai = path.dirname(filePath);
+    if (fs.existsSync(pastaPai)) {
+      const itens = fs.readdirSync(pastaPai);
+      if (itens.length === 0) {
+        fs.rmdirSync(pastaPai);
+      }
+    }
   }
 
   // Garante que o slug seja único — evita colisão de URL entre pontos diferentes

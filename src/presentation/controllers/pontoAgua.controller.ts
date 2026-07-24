@@ -65,7 +65,9 @@ export class PontoAguaController {
     @UploadedFiles() files?: { imagem?: Express.Multer.File[] },
   ): Promise<PontoAguaResponseDto> {
     const file = files?.imagem?.[0];
-    const imagemUrl = file ? await this.salvarImagem(file, dto.nome) : undefined;
+    const imagemUrl = file
+      ? await this.salvarImagem(file, dto.nome)
+      : undefined;
     return this.app.create(dto, req.user, imagemUrl);
   }
 
@@ -89,9 +91,7 @@ export class PontoAguaController {
   @Get("slug/:slug")
   @ApiOperation({ summary: "Busca os detalhes de uma praia/lagoa pelo slug" })
   @ApiResponse({ status: 200, type: PontoAguaResponseDto })
-  async findBySlug(
-    @Param("slug") slug: string,
-  ): Promise<PontoAguaResponseDto> {
+  async findBySlug(@Param("slug") slug: string): Promise<PontoAguaResponseDto> {
     return this.app.findBySlug(slug);
   }
 
@@ -147,7 +147,7 @@ export class PontoAguaController {
     nome: string,
   ): Promise<string> {
     const pasta = sanitizarNomePasta(nome);
-    const uploadDir = path.join("./public/pontos-agua", pasta);
+    const uploadDir = path.join("./uploads/pontos-agua", pasta);
 
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -158,6 +158,6 @@ export class PontoAguaController {
       .webp({ quality: 85 })
       .toFile(path.join(uploadDir, nomeArquivo));
 
-    return `/public/pontos-agua/${pasta}/${nomeArquivo}`;
+    return `/uploads/pontos-agua/${pasta}/${nomeArquivo}`;
   }
 }
