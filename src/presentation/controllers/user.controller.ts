@@ -7,6 +7,7 @@ import {
   Get,
   Query,
   Put,
+  Patch,
   Delete,
   Param,
   UseGuards,
@@ -27,9 +28,10 @@ import { LoginResponseDto } from "../dto/response/loginResponse.dto";
 import { ForgotPasswordRequestDto } from "../dto/request/auth/forgotPasswordRequest.dto";
 import { ResetPasswordRequestDto } from "../dto/request/auth/resetPasswordRequest.dto";
 import { VerifyEmailRequestDto } from "../dto/request/auth/verifyEmailRequest.dto";
+import { SetActiveRequestDto } from "../dto/request/users/setActiveRequestDto";
 
-@ApiTags("Autenticação e Usuários") // O nome da aba lá no Swagger
-@Controller("users") // A URL base será /users
+@ApiTags("Autenticação e Usuários")
+@Controller("users")
 export class UserController {
   constructor(private readonly userApplication: UserApplication) {}
 
@@ -50,7 +52,6 @@ export class UserController {
   async register(
     @Body() createUserDto: CreateUserRequestDto,
   ): Promise<UserResponseDto> {
-    // O @Body() já garante que o JSON que chegou passou pelo DTO e é válido!
     return this.userApplication.create(createUserDto);
   }
 
@@ -86,6 +87,27 @@ export class UserController {
     return this.userApplication.update(id, dto, req.user);
   }
 
+  // ---------------------------------------------------------
+  // ROTA: PATCH /users/:id  — altera apenas o campo active
+  // Usado pelo painel admin para alternar "Email verificado"
+  // ---------------------------------------------------------
+  @Patch(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Altera o status active do usuário (apenas Admin)" })
+  @ApiResponse({
+    status: 200,
+    description: "Status atualizado com sucesso",
+    type: UserResponseDto,
+  })
+  async setActive(
+    @Param("id") id: string,
+    @Body() dto: SetActiveRequestDto,
+    @Req() req: any,
+  ) {
+    return this.userApplication.update(id, { active: dto.active }, req.user);
+  }
+
   @Delete(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -98,7 +120,7 @@ export class UserController {
   // ROTA: POST /users/login
   // ---------------------------------------------------------
   @Post("login")
-  @HttpCode(HttpStatus.OK) // Força o status 200 em vez do 201 padrão do Post
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Autentica um usuário e retorna um token JWT" })
   @ApiResponse({
     status: 200,
