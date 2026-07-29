@@ -342,6 +342,7 @@ model SecretariaTurismoTuristando {
   titulo              String
   texto               String            @db.Text
   imagensUrl          Json?             // Array de caminhos das imagens
+  ordem               Int            @default(0)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 

@@ -8,6 +8,7 @@ import { SecretariaTurismo } from "../../data/entities/secretariaTurismo.Entity"
 import { SecretariaTurismoTuristando } from "../../data/entities/secretariaTurismoTuristando.Entity";
 import { SecretariaTurismoProjeto } from "../../data/entities/secretariaTurismoProjeto.Entity";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
+import { ReorderTuristandoRequestDto } from "src/presentation/dto/request/secretaria-turismo/reorderTuristandoDto";
 
 @Injectable()
 export class SecretariaTurismoApplication {
@@ -40,7 +41,12 @@ export class SecretariaTurismoApplication {
     return s;
   }
 
-  async update(id: string, data: any, usuario: IUsuarioLogado, videoUrl?: string) {
+  async update(
+    id: string,
+    data: any,
+    usuario: IUsuarioLogado,
+    videoUrl?: string,
+  ) {
     this.verificarAdmin(usuario);
     await this.findById(id);
     if (videoUrl) data.videoUrl = videoUrl;
@@ -76,6 +82,7 @@ export class SecretariaTurismoApplication {
     data: any,
     usuario: IUsuarioLogado,
     imagensUrl?: string[],
+    ordem?: number,
   ) {
     this.verificarAdmin(usuario);
     const existente = await this.repo.findTuristandoById(turistandoId);
@@ -83,7 +90,20 @@ export class SecretariaTurismoApplication {
       throw new NotFoundException("Bloco Turistando não encontrado.");
     const payload: Partial<SecretariaTurismoTuristando> = { ...data };
     if (imagensUrl && imagensUrl.length > 0) payload.imagensUrl = imagensUrl;
+    if (ordem !== undefined) payload.ordem = ordem;
     return this.repo.updateTuristando(turistandoId, payload);
+  }
+
+  async reorderTuristandos(
+    dto: ReorderTuristandoRequestDto,
+    user: IUsuarioLogado,
+  ): Promise<void> {
+    if (user.perfil !== "ADMIN") {
+      throw new ForbiddenException(
+        "Apenas administradores têm permissão para reordenar o Turistando.",
+      );
+    }
+    await this.repo.reorderTuristandos(dto.items);
   }
 
   async deleteTuristando(turistandoId: string, usuario: IUsuarioLogado) {
@@ -125,8 +145,7 @@ export class SecretariaTurismoApplication {
   ) {
     this.verificarAdmin(usuario);
     const existente = await this.repo.findProjetoById(projetoId);
-    if (!existente)
-      throw new NotFoundException("Projeto não encontrado.");
+    if (!existente) throw new NotFoundException("Projeto não encontrado.");
     const payload: Partial<SecretariaTurismoProjeto> = { ...data };
     if (imagemUrl) payload.imagemUrl = imagemUrl;
     return this.repo.updateProjeto(projetoId, payload);
@@ -135,8 +154,7 @@ export class SecretariaTurismoApplication {
   async deleteProjeto(projetoId: string, usuario: IUsuarioLogado) {
     this.verificarAdmin(usuario);
     const existente = await this.repo.findProjetoById(projetoId);
-    if (!existente)
-      throw new NotFoundException("Projeto não encontrado.");
+    if (!existente) throw new NotFoundException("Projeto não encontrado.");
     await this.repo.deleteProjeto(projetoId);
   }
 

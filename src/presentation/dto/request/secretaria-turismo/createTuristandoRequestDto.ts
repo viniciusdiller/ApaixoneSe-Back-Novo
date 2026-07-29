@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsInt } from "class-validator";
 
 export class CreateTuristandoRequestDto {
   @ApiProperty({
@@ -24,4 +24,12 @@ export class CreateTuristandoRequestDto {
     description: "M\u00faltiplas imagens do local",
   })
   imagens?: any[];
+
+  @IsInt()
+  @IsNotEmpty()
+  @ApiProperty({
+    example: 1,
+    description: "Ordem do bloco Turistando",
+  })
+  ordem!: number;
 }

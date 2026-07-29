@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -32,6 +33,7 @@ import { CreateTuristandoRequestDto } from "../dto/request/secretaria-turismo/cr
 import { UpdateTuristandoRequestDto } from "../dto/request/secretaria-turismo/updateTuristandoRequestDto";
 import { CreateProjetoRequestDto } from "../dto/request/secretaria-turismo/createProjetoRequestDto";
 import { UpdateProjetoRequestDto } from "../dto/request/secretaria-turismo/updateProjetoRequestDto";
+import { ReorderTuristandoRequestDto } from "../dto/request/secretaria-turismo/reorderTuristandoDto";
 
 @ApiTags("Secretaria de Turismo")
 @Controller("secretaria-turismo")
@@ -44,7 +46,9 @@ export class SecretariaTurismoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes("multipart/form-data")
-  @ApiOperation({ summary: "Cria a base da Secretaria de Turismo (Admin apenas)" })
+  @ApiOperation({
+    summary: "Cria a base da Secretaria de Turismo (Admin apenas)",
+  })
   @UseInterceptors(
     FileFieldsInterceptor([{ name: "video", maxCount: 1 }], {
       storage: memoryStorage(),
@@ -58,8 +62,10 @@ export class SecretariaTurismoController {
     let videoUrl: string | undefined;
     if (files?.video?.[0]) {
       const uploadDir = `./uploads/secretaria/institucional`;
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      const ext = path.extname(files.video[0].originalname).toLowerCase() || ".mp4";
+      if (!fs.existsSync(uploadDir))
+        fs.mkdirSync(uploadDir, { recursive: true });
+      const ext =
+        path.extname(files.video[0].originalname).toLowerCase() || ".mp4";
       const nomeVideo = `video_${Date.now()}${ext}`;
       fs.writeFileSync(path.join(uploadDir, nomeVideo), files.video[0].buffer);
       videoUrl = `/uploads/secretaria/institucional/${nomeVideo}`;
@@ -68,7 +74,9 @@ export class SecretariaTurismoController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Retorna todas as informações da Secretaria de Turismo" })
+  @ApiOperation({
+    summary: "Retorna todas as informações da Secretaria de Turismo",
+  })
   async findAll() {
     return this.app.findAll();
   }
@@ -92,8 +100,10 @@ export class SecretariaTurismoController {
     let videoUrl: string | undefined;
     if (files?.video?.[0]) {
       const uploadDir = `./uploads/secretaria/institucional`;
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      const ext = path.extname(files.video[0].originalname).toLowerCase() || ".mp4";
+      if (!fs.existsSync(uploadDir))
+        fs.mkdirSync(uploadDir, { recursive: true });
+      const ext =
+        path.extname(files.video[0].originalname).toLowerCase() || ".mp4";
       const nomeVideo = `video_${Date.now()}${ext}`;
       fs.writeFileSync(path.join(uploadDir, nomeVideo), files.video[0].buffer);
       videoUrl = `/uploads/secretaria/institucional/${nomeVideo}`;
@@ -105,7 +115,9 @@ export class SecretariaTurismoController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta uma Secretaria e limpa todos os sub-blocos" })
+  @ApiOperation({
+    summary: "Deleta uma Secretaria e limpa todos os sub-blocos",
+  })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.app.delete(id, req.user);
   }
@@ -161,6 +173,23 @@ export class SecretariaTurismoController {
       req.user,
       imagensUrl.length > 0 ? imagensUrl : undefined,
     );
+  }
+
+  @Patch("turistando/reorder")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Reordena os blocos Turistando em lote (Admin apenas)",
+  })
+  async reorderTuristandos(
+    @Body() dto: ReorderTuristandoRequestDto,
+    @Req() req: any,
+  ) {
+    await this.app.reorderTuristandos(dto, req.user);
+
+    return {
+      message: "Ordem atualizada com sucesso!",
+    };
   }
 
   @Delete("turistando/:turistandoId")
@@ -240,10 +269,7 @@ export class SecretariaTurismoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Deleta um único projeto pelo ID" })
-  async deleteProjeto(
-    @Param("projetoId") projetoId: string,
-    @Req() req: any,
-  ) {
+  async deleteProjeto(@Param("projetoId") projetoId: string, @Req() req: any) {
     return this.app.deleteProjeto(projetoId, req.user);
   }
 
@@ -252,10 +278,7 @@ export class SecretariaTurismoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Deleta múltiplos projetos por IDs" })
-  async deleteManyProjetos(
-    @Body() body: { ids: string[] },
-    @Req() req: any,
-  ) {
+  async deleteManyProjetos(@Body() body: { ids: string[] }, @Req() req: any) {
     return this.app.deleteManyProjetos(body.ids, req.user);
   }
 
