@@ -4,6 +4,7 @@ export class SecretariaTurismoTuristando {
   titulo!: string;
   texto!: string;
   imagensUrl?: string[] | any;
+  ordem!: number;
   createdAt?: Date;
   updatedAt?: Date;
 

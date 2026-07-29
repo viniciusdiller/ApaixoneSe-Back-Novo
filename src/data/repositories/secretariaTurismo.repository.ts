@@ -15,7 +15,7 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
         textoExplicativo: data.textoExplicativo,
         videoUrl: data.videoUrl,
       },
-      include: { turistandos: true, projetos: true },
+      include: { turistandos: { orderBy: { ordem: "asc" } }, projetos: true },
     });
     return new SecretariaTurismo(criado);
   }
@@ -37,7 +37,10 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
     return new SecretariaTurismo(s);
   }
 
-  async update(id: string, data: Partial<SecretariaTurismo>): Promise<SecretariaTurismo> {
+  async update(
+    id: string,
+    data: Partial<SecretariaTurismo>,
+  ): Promise<SecretariaTurismo> {
     const atualizado = await this.prisma.secretariaTurismo.update({
       where: { id },
       data: {
@@ -55,13 +58,31 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
 
   // ================= TURISTANDO =================
 
-  async saveTuristando(data: SecretariaTurismoTuristando): Promise<SecretariaTurismoTuristando> {
+  async reorderTuristandos(
+    items: { id: string; ordem: number }[],
+  ): Promise<void> {
+    const queries = items.map((item) =>
+      this.prisma.secretariaTurismoTuristando.update({
+        where: { id: item.id },
+        data: { ordem: item.ordem },
+      }),
+    );
+    await this.prisma.$transaction(queries);
+  }
+
+  async saveTuristando(
+    data: SecretariaTurismoTuristando,
+  ): Promise<SecretariaTurismoTuristando> {
     const t = await this.prisma.secretariaTurismoTuristando.create({ data });
     return new SecretariaTurismoTuristando(t);
   }
 
-  async findTuristandoById(id: string): Promise<SecretariaTurismoTuristando | null> {
-    const t = await this.prisma.secretariaTurismoTuristando.findUnique({ where: { id } });
+  async findTuristandoById(
+    id: string,
+  ): Promise<SecretariaTurismoTuristando | null> {
+    const t = await this.prisma.secretariaTurismoTuristando.findUnique({
+      where: { id },
+    });
     if (!t) return null;
     return new SecretariaTurismoTuristando(t);
   }
@@ -76,6 +97,7 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
         titulo: data.titulo,
         texto: data.texto,
         imagensUrl: data.imagensUrl,
+        ordem: data.ordem,
       },
     });
     return new SecretariaTurismoTuristando(t);
@@ -93,13 +115,17 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
 
   // ================= PROJETOS =================
 
-  async saveProjeto(data: SecretariaTurismoProjeto): Promise<SecretariaTurismoProjeto> {
+  async saveProjeto(
+    data: SecretariaTurismoProjeto,
+  ): Promise<SecretariaTurismoProjeto> {
     const p = await this.prisma.secretariaTurismoProjeto.create({ data });
     return new SecretariaTurismoProjeto(p);
   }
 
   async findProjetoById(id: string): Promise<SecretariaTurismoProjeto | null> {
-    const p = await this.prisma.secretariaTurismoProjeto.findUnique({ where: { id } });
+    const p = await this.prisma.secretariaTurismoProjeto.findUnique({
+      where: { id },
+    });
     if (!p) return null;
     return new SecretariaTurismoProjeto(p);
   }
