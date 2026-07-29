@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Get,
-  Query,
   Put,
   Patch,
   Delete,
@@ -61,14 +60,6 @@ export class UserController {
   @ApiOperation({ summary: "Lista todos os usuários (Apenas Admin)" })
   async findAll(@Req() req: any) {
     return this.userApplication.findAll(req.user);
-  }
-
-  @Get("verify-email")
-  @ApiOperation({ summary: "Verifica o e-mail por link (token na query string)" })
-  @ApiResponse({ status: 200, description: "E-mail verificado com sucesso" })
-  async verifyEmailByQuery(@Query("token") token: string) {
-    await this.userApplication.verifyEmail(token);
-    return { message: "E-mail verificado com sucesso. Sua conta já está ativa." };
   }
 
   @Get(":id")
@@ -132,10 +123,17 @@ export class UserController {
     return this.userApplication.login(loginDto);
   }
 
+  // ---------------------------------------------------------
+  // ROTA: POST /users/verify-email
+  // Recebe o código OTP de 6 dígitos enviado ao e-mail
+  // NÃO há mais GET /users/verify-email — o usuário não clica
+  // em link que aponta para o backend.
+  // ---------------------------------------------------------
   @Post("verify-email")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Verifica o e-mail com token" })
+  @ApiOperation({ summary: "Verifica o e-mail com código OTP de 6 dígitos" })
   @ApiResponse({ status: 200, description: "E-mail verificado com sucesso" })
+  @ApiResponse({ status: 400, description: "Código inválido ou expirado" })
   async verifyEmail(@Body() dto: VerifyEmailRequestDto) {
     await this.userApplication.verifyEmail(dto.token);
     return { message: "E-mail verificado com sucesso." };
@@ -143,16 +141,16 @@ export class UserController {
 
   @Post("forgot-password")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Envia token de recuperação de senha para o e-mail" })
+  @ApiOperation({ summary: "Envia código OTP de recuperação de senha para o e-mail" })
   @ApiResponse({ status: 200, description: "E-mail de recuperação enviado" })
   async forgotPassword(@Body() dto: ForgotPasswordRequestDto) {
     await this.userApplication.forgotPassword(dto.email);
-    return { message: "Token de recuperação enviado para o e-mail informado." };
+    return { message: "Código de recuperação enviado para o e-mail informado." };
   }
 
   @Post("reset-password")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Redefine a senha usando token" })
+  @ApiOperation({ summary: "Redefine a senha usando código OTP de 6 dígitos" })
   @ApiResponse({ status: 200, description: "Senha redefinida com sucesso" })
   async resetPassword(@Body() dto: ResetPasswordRequestDto) {
     await this.userApplication.resetPassword(dto.token, dto.senha);
