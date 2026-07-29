@@ -31,7 +31,7 @@ export class UserApplication {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly tokenRepository: AuthTokenRepository,
-    private readonly emailService: EmailService
+    private readonly emailService: EmailService,
   ) {}
 
   // ==========================================
@@ -39,14 +39,18 @@ export class UserApplication {
   // ==========================================
   async create(data: CreateUserRequestDto): Promise<UserResponseDto> {
     if (data.perfil === "ADMIN") {
-      throw new BadRequestException("Não é permitido criar uma conta de administrador por este canal.");
+      throw new BadRequestException(
+        "Não é permitido criar uma conta de administrador por este canal.",
+      );
     }
 
     const emailExiste = await this.userRepository.findByEmail(data.email);
-    if (emailExiste) throw new BadRequestException("Este email já está em uso.");
+    if (emailExiste)
+      throw new BadRequestException("Este email já está em uso.");
 
     const usuarioExiste = await this.userRepository.findByUsuario(data.usuario);
-    if (usuarioExiste) throw new BadRequestException("Este nome de usuário já está em uso.");
+    if (usuarioExiste)
+      throw new BadRequestException("Este nome de usuário já está em uso.");
 
     const salt = await bcrypt.genSalt(10);
     const senhaCriptografada = await bcrypt.hash(data.senha, salt);
@@ -67,12 +71,19 @@ export class UserApplication {
 
     // Gera código OTP de 6 dígitos numéricos (igual ao forgotPassword)
     const codigo = randomInt(0, 1000000).toString().padStart(6, "0");
-    const tokenHash = createHash('sha256').update(codigo).digest('hex');
+    const tokenHash = createHash("sha256").update(codigo).digest("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-    const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:3304").replace(/\/+$/, "");
+    const frontendUrl = (
+      process.env.FRONTEND_URL || "http://localhost:3304"
+    ).replace(/\/+$/, "");
     const verifyPageUrl = `${frontendUrl}/verificar-email`;
 
-    await this.tokenRepository.create(userSalvo.id, tokenHash, AUTH_TOKEN_TYPE.VERIFY_EMAIL, expiresAt);
+    await this.tokenRepository.create(
+      userSalvo.id,
+      tokenHash,
+      AUTH_TOKEN_TYPE.VERIFY_EMAIL,
+      expiresAt,
+    );
 
     await this.emailService.sendEmail(
       data.email,
@@ -87,12 +98,7 @@ export class UserApplication {
           <div style="display: inline-block; margin: 0 0 24px; padding: 14px 24px; background: #eef2ff; color: #1d4ed8; border-radius: 10px; font-size: 36px; letter-spacing: 10px; font-weight: 700; font-family: monospace;">
             ${codigo}
           </div>
-          <p style="margin: 0 0 8px; color: #374151; line-height: 1.6;">
-            Acesse a página de verificação e insira o código acima:
-          </p>
-          <p style="margin: 0 0 20px;">
-            <a href="${verifyPageUrl}" style="color: #1d4ed8; word-break: break-all;">${verifyPageUrl}</a>
-          </p>
+          
           <p style="margin: 0 0 8px; color: #374151; line-height: 1.6;">
             Este código expira em <strong>24 horas</strong>.
           </p>
@@ -100,7 +106,7 @@ export class UserApplication {
             Se você não criou essa conta, pode ignorar este e-mail com segurança.
           </p>
         </div>
-      </div>`
+      </div>`,
     );
 
     return this.mapToResponseDto(userSalvo);
@@ -117,10 +123,16 @@ export class UserApplication {
       throw new BadRequestException("O código deve ter 6 dígitos numéricos.");
     }
 
-    const tokenHash = createHash('sha256').update(normalizedCodigo).digest('hex');
+    const tokenHash = createHash("sha256")
+      .update(normalizedCodigo)
+      .digest("hex");
     const authToken = await this.tokenRepository.findByToken(tokenHash);
 
-    if (!authToken || authToken.type !== AUTH_TOKEN_TYPE.VERIFY_EMAIL || authToken.expiresAt < new Date()) {
+    if (
+      !authToken ||
+      authToken.type !== AUTH_TOKEN_TYPE.VERIFY_EMAIL ||
+      authToken.expiresAt < new Date()
+    ) {
       throw new BadRequestException("Código inválido ou expirado.");
     }
 
@@ -144,13 +156,18 @@ export class UserApplication {
     }
 
     if (!user.active) {
-      throw new UnauthorizedException("Por favor, verifique seu e-mail antes de acessar.");
+      throw new UnauthorizedException(
+        "Por favor, verifique seu e-mail antes de acessar.",
+      );
     }
 
     const secret = process.env.JWT_SECRET;
-    if (!secret) throw new InternalServerErrorException("Erro de configuração.");
+    if (!secret)
+      throw new InternalServerErrorException("Erro de configuração.");
 
-    const token = jwt.sign({ id: user.id, perfil: user.perfil }, secret, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user.id, perfil: user.perfil }, secret, {
+      expiresIn: "1d",
+    });
 
     return { token, user: this.mapToResponseDto(user) };
   }
@@ -162,14 +179,21 @@ export class UserApplication {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     if (!user.id) {
-      throw new InternalServerErrorException("Usuário inválido para recuperação de senha.");
+      throw new InternalServerErrorException(
+        "Usuário inválido para recuperação de senha.",
+      );
     }
 
     const token = randomInt(0, 1000000).toString().padStart(6, "0");
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const tokenHash = createHash("sha256").update(token).digest("hex");
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min
 
-    await this.tokenRepository.create(user.id, tokenHash, AUTH_TOKEN_TYPE.RESET_PASSWORD, expiresAt);
+    await this.tokenRepository.create(
+      user.id,
+      tokenHash,
+      AUTH_TOKEN_TYPE.RESET_PASSWORD,
+      expiresAt,
+    );
 
     await this.emailService.sendEmail(
       email,
@@ -192,7 +216,7 @@ export class UserApplication {
             Se você não solicitou a recuperação, ignore este e-mail.
           </p>
         </div>
-      </div>`
+      </div>`,
     );
   }
 
@@ -202,17 +226,25 @@ export class UserApplication {
       throw new BadRequestException("O código deve ter 6 dígitos numéricos.");
     }
 
-    const tokenHash = createHash('sha256').update(normalizedToken).digest('hex');
+    const tokenHash = createHash("sha256")
+      .update(normalizedToken)
+      .digest("hex");
     const authToken = await this.tokenRepository.findByToken(tokenHash);
 
-    if (!authToken || authToken.type !== AUTH_TOKEN_TYPE.RESET_PASSWORD || authToken.expiresAt < new Date()) {
+    if (
+      !authToken ||
+      authToken.type !== AUTH_TOKEN_TYPE.RESET_PASSWORD ||
+      authToken.expiresAt < new Date()
+    ) {
       throw new BadRequestException("Código inválido ou expirado.");
     }
 
     const salt = await bcrypt.genSalt(10);
     const senhaCriptografada = await bcrypt.hash(newPassword, salt);
 
-    await this.userRepository.update(authToken.userId, { senha: senhaCriptografada });
+    await this.userRepository.update(authToken.userId, {
+      senha: senhaCriptografada,
+    });
     await this.tokenRepository.delete(authToken.id);
   }
 
@@ -220,20 +252,26 @@ export class UserApplication {
   // OUTROS MÉTODOS (findAll, findById, update, delete)
   // ==========================================
   async findAll(usuarioLogado: IUsuarioLogado): Promise<UserResponseDto[]> {
-    if (usuarioLogado.perfil !== "ADMIN") throw new ForbiddenException("Apenas administradores.");
+    if (usuarioLogado.perfil !== "ADMIN")
+      throw new ForbiddenException("Apenas administradores.");
     const users = await this.userRepository.findAll();
     return users.map((user) => this.mapToResponseDto(user));
   }
 
-  async findById(id: string, usuarioLogado: IUsuarioLogado): Promise<UserResponseDto> {
-    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) throw new ForbiddenException("Sem permissão.");
+  async findById(
+    id: string,
+    usuarioLogado: IUsuarioLogado,
+  ): Promise<UserResponseDto> {
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
+      throw new ForbiddenException("Sem permissão.");
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     return this.mapToResponseDto(user);
   }
 
   async update(id: string, data: any, usuarioLogado: IUsuarioLogado) {
-    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) throw new ForbiddenException("Sem permissão.");
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
+      throw new ForbiddenException("Sem permissão.");
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     if (data.senha) {
@@ -245,7 +283,8 @@ export class UserApplication {
   }
 
   async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
-    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) throw new ForbiddenException("Sem permissão.");
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
+      throw new ForbiddenException("Sem permissão.");
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     await this.userRepository.delete(id);
