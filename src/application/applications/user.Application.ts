@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
-import { randomBytes, createHash, randomInt } from "crypto";
+import { createHash, randomInt } from "crypto";
 
 import { UserRepository } from "../../data/repositories/user.repository";
 import { AuthTokenRepository } from "../../data/repositories/authToken.repository";
@@ -65,39 +65,36 @@ export class UserApplication {
       throw new InternalServerErrorException("Erro ao criar usuário.");
     }
 
-    // Gerar token de verificação
-    const token = randomBytes(32).toString('hex');
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+    // Gera código OTP de 6 dígitos numéricos (igual ao forgotPassword)
+    const codigo = randomInt(0, 1000000).toString().padStart(6, "0");
+    const tokenHash = createHash('sha256').update(codigo).digest('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
     const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:3304").replace(/\/+$/, "");
-    const backendUrl = (process.env.BACKEND_URL || process.env.API_URL || "http://localhost:3000").replace(/\/+$/, "");
-    const confirmApiUrl = `${backendUrl}/users/verify-email?token=${token}`;
-    const frontendAfterVerifyUrl = `${frontendUrl}/login?emailVerificado=true`;
+    const verifyPageUrl = `${frontendUrl}/verificar-email`;
 
     await this.tokenRepository.create(userSalvo.id, tokenHash, AUTH_TOKEN_TYPE.VERIFY_EMAIL, expiresAt);
-    
+
     await this.emailService.sendEmail(
       data.email,
-      "Confirme seu e-mail",
-      `Olá!\n\nPara ativar sua conta, clique no link abaixo:\n${confirmApiUrl}\n\nApós confirmar, faça login em: ${frontendAfterVerifyUrl}\n\nEste link expira em 24 horas.\n\nSe você não criou essa conta, ignore este e-mail.`,
+      "Confirme seu e-mail — Apaixone-se",
+      `Olá, ${data.nome}!\n\nSeu código de verificação é: ${codigo}\n\nAcesse ${verifyPageUrl} e insira o código acima para ativar sua conta.\n\nEste código expira em 24 horas.\n\nSe você não criou essa conta, ignore este e-mail.`,
       `<div style="font-family: Arial, Helvetica, sans-serif; background-color: #f5f7fb; padding: 24px;">
-        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e6ebf2;">
-          <h2 style="margin: 0 0 12px; color: #1f2937;">Confirme seu e-mail</h2>
-          <p style="margin: 0 0 16px; color: #374151; line-height: 1.6;">
-            Olá! Recebemos seu cadastro. Para ativar sua conta, confirme seu e-mail clicando no botão abaixo.
+        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e6ebf2;">
+          <h2 style="margin: 0 0 8px; color: #1f2937; font-size: 22px;">Confirme seu e-mail</h2>
+          <p style="margin: 0 0 20px; color: #374151; line-height: 1.6;">
+            Olá, <strong>${data.nome}</strong>! Use o código abaixo para ativar sua conta:
           </p>
-          <a href="${confirmApiUrl}" style="display: inline-block; text-decoration: none; background: #1d4ed8; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-weight: 700; margin: 4px 0 16px;">
-            Confirmar e-mail
-          </a>
-          <p style="margin: 0 0 10px; color: #374151; line-height: 1.6;">
-            Se o botão não funcionar, copie e cole este link no navegador:
-          </p>
-          <p style="margin: 0 0 12px; word-break: break-all; color: #1d4ed8;">${confirmApiUrl}</p>
+          <div style="display: inline-block; margin: 0 0 24px; padding: 14px 24px; background: #eef2ff; color: #1d4ed8; border-radius: 10px; font-size: 36px; letter-spacing: 10px; font-weight: 700; font-family: monospace;">
+            ${codigo}
+          </div>
           <p style="margin: 0 0 8px; color: #374151; line-height: 1.6;">
-            Este link expira em <strong>24 horas</strong>.
+            Acesse a página de verificação e insira o código acima:
+          </p>
+          <p style="margin: 0 0 20px;">
+            <a href="${verifyPageUrl}" style="color: #1d4ed8; word-break: break-all;">${verifyPageUrl}</a>
           </p>
           <p style="margin: 0 0 8px; color: #374151; line-height: 1.6;">
-            Depois da confirmação, faça login aqui: <a href="${frontendAfterVerifyUrl}" style="color: #1d4ed8;">${frontendAfterVerifyUrl}</a>
+            Este código expira em <strong>24 horas</strong>.
           </p>
           <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
             Se você não criou essa conta, pode ignorar este e-mail com segurança.
@@ -109,17 +106,22 @@ export class UserApplication {
     return this.mapToResponseDto(userSalvo);
   }
 
-  async verifyEmail(token: string) {
-    const normalizedToken = decodeURIComponent((token || "").trim());
-    if (!normalizedToken) {
-      throw new BadRequestException("Token inválido ou ausente.");
+  async verifyEmail(codigo: string) {
+    const normalizedCodigo = (codigo || "").trim();
+    if (!normalizedCodigo) {
+      throw new BadRequestException("Código inválido ou ausente.");
     }
 
-    const tokenHash = createHash('sha256').update(normalizedToken).digest('hex');
+    // Valida que é numérico de 6 dígitos
+    if (!/^\d{6}$/.test(normalizedCodigo)) {
+      throw new BadRequestException("O código deve ter 6 dígitos numéricos.");
+    }
+
+    const tokenHash = createHash('sha256').update(normalizedCodigo).digest('hex');
     const authToken = await this.tokenRepository.findByToken(tokenHash);
 
     if (!authToken || authToken.type !== AUTH_TOKEN_TYPE.VERIFY_EMAIL || authToken.expiresAt < new Date()) {
-      throw new BadRequestException("Token inválido ou expirado.");
+      throw new BadRequestException("Código inválido ou expirado.");
     }
 
     await this.userRepository.update(authToken.userId, { active: true });
@@ -171,16 +173,16 @@ export class UserApplication {
 
     await this.emailService.sendEmail(
       email,
-      "Recuperação de Senha",
+      "Recuperação de Senha — Apaixone-se",
       `Olá!\n\nRecebemos uma solicitação para redefinir a sua senha.\n\nSeu código de recuperação é: ${token}\n\nEste código expira em 30 minutos. Se você não solicitou a recuperação, ignore este e-mail.\n\nAtenciosamente,\nEquipe Apaixone-se`,
       `<div style="font-family: Arial, Helvetica, sans-serif; background-color: #f5f7fb; padding: 24px;">
-        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e6ebf2;">
-          <h2 style="margin: 0 0 12px; color: #1f2937;">Recuperação de Senha</h2>
+        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e6ebf2;">
+          <h2 style="margin: 0 0 8px; color: #1f2937; font-size: 22px;">Recuperação de Senha</h2>
           <p style="margin: 0 0 16px; color: #374151; line-height: 1.6;">
             Olá! Recebemos uma solicitação para redefinir a sua senha.
           </p>
           <p style="margin: 0 0 8px; color: #374151;">Use o código abaixo:</p>
-          <div style="display: inline-block; margin: 6px 0 18px; padding: 10px 16px; background: #eef2ff; color: #1d4ed8; border-radius: 8px; font-size: 28px; letter-spacing: 6px; font-weight: 700;">
+          <div style="display: inline-block; margin: 6px 0 24px; padding: 14px 24px; background: #eef2ff; color: #1d4ed8; border-radius: 10px; font-size: 36px; letter-spacing: 10px; font-weight: 700; font-family: monospace;">
             ${token}
           </div>
           <p style="margin: 0 0 12px; color: #374151; line-height: 1.6;">
@@ -195,11 +197,16 @@ export class UserApplication {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const normalizedToken = (token || "").trim();
+    if (!/^\d{6}$/.test(normalizedToken)) {
+      throw new BadRequestException("O código deve ter 6 dígitos numéricos.");
+    }
+
+    const tokenHash = createHash('sha256').update(normalizedToken).digest('hex');
     const authToken = await this.tokenRepository.findByToken(tokenHash);
 
     if (!authToken || authToken.type !== AUTH_TOKEN_TYPE.RESET_PASSWORD || authToken.expiresAt < new Date()) {
-      throw new BadRequestException("Token inválido ou expirado.");
+      throw new BadRequestException("Código inválido ou expirado.");
     }
 
     const salt = await bcrypt.genSalt(10);
