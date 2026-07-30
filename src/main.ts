@@ -25,6 +25,23 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
+  // Fix: Private Network Access (PNA) — Chrome 98+
+  // Quando o frontend (HTTPS público) tenta acessar o backend em IP privado
+  // (172.16.x.x, 10.x.x.x, 192.168.x.x), o browser envia um preflight OPTIONS
+  // com o header "Access-Control-Request-Private-Network: true".
+  // O servidor DEVE responder com "Access-Control-Allow-Private-Network: true"
+  // para que o browser permita a requisição. Sem este header, o erro é:
+  // "Permission was denied for this request to access the `local` address space."
+  app.use((req: any, res: any, next: any) => {
+    if (
+      req.method === "OPTIONS" &&
+      req.headers["access-control-request-private-network"]
+    ) {
+      res.setHeader("Access-Control-Allow-Private-Network", "true");
+    }
+    next();
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
