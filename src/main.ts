@@ -13,33 +13,26 @@ async function bootstrap() {
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ limit: "10mb", extended: true }));
 
-  // CORS: credentials:true é incompatível com origin:"*".
-  // Usar uma função que reflete a origem da requisição permite
-  // qualquer cliente (dev + produção) sem bloquear o preflight OPTIONS.
+  // CORS: Usa a variável FRONTEND_URL para definir a origem permitida.
+  // Em dev, FRONTEND_URL pode ser http://localhost:3000 (ou IP local).
+  // Em produção, deve ser o domínio público do frontend (ex: https://apaixonese.saquarema.rj.gov.br).
+  // credentials:true é incompatível com origin:"*", por isso usamos a lista explícita.
+  const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
+    .split(",")
+    .map((o) => o.trim());
+
   app.enableCors({
-    origin: (origin, callback) => callback(null, origin ?? true),
+    origin: (origin, callback) => {
+      // Permite requisições sem origin (ex: Swagger, curl, server-side)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origin '${origin}' not allowed by CORS`), false);
+    },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization,Accept",
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
-  });
-
-  // Fix: Private Network Access (PNA) — Chrome 98+
-  // Quando o frontend (HTTPS público) tenta acessar o backend em IP privado
-  // (172.16.x.x, 10.x.x.x, 192.168.x.x), o browser envia um preflight OPTIONS
-  // com o header "Access-Control-Request-Private-Network: true".
-  // O servidor DEVE responder com "Access-Control-Allow-Private-Network: true"
-  // para que o browser permita a requisição. Sem este header, o erro é:
-  // "Permission was denied for this request to access the `local` address space."
-  app.use((req: any, res: any, next: any) => {
-    if (
-      req.method === "OPTIONS" &&
-      req.headers["access-control-request-private-network"]
-    ) {
-      res.setHeader("Access-Control-Allow-Private-Network", "true");
-    }
-    next();
   });
 
   app.useGlobalPipes(
@@ -70,5 +63,6 @@ async function bootstrap() {
   const PORT = process.env.PORT || 6969;
   await app.listen(PORT);
   console.log(`🚀 Servidor rodando em: http://localhost:${PORT}/api`);
+  console.log(`🔒 CORS permitido para: ${allowedOrigins.join(", ")}`);
 }
 bootstrap();
