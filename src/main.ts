@@ -11,6 +11,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix("api");
+  app.useStaticAssets(join(__dirname, "..", "uploads"), {
+    prefix: "/api/uploads/",
+  });
+
+  app.useStaticAssets(join(__dirname, "..", "public"), {
+    prefix: "/api/public/",
+  });
 
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ limit: "10mb", extended: true }));
