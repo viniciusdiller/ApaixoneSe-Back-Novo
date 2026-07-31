@@ -17,6 +17,16 @@ async function bootstrap() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+  app.use(
+    "/api/uploads",
+    express.static("/root/Apaixone-se/ApaixoneSe-Back-Novo/uploads"),
+  );
+
+  app.use(
+    "/api/public",
+    express.static("/root/Apaixone-se/ApaixoneSe-Back-Novo/public"),
+  );
+
   app.enableCors({
     origin: (origin, callback) => callback(null, origin ?? true),
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
@@ -33,9 +43,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-
-  app.use("/api/uploads", express.static(join(__dirname, "..", "uploads")));
-  app.use("/api/public", express.static(join(__dirname, "..", "public")));
 
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")
