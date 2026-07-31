@@ -13,21 +13,11 @@ async function bootstrap() {
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ limit: "10mb", extended: true }));
 
-  // CORS: Usa a variável FRONTEND_URL para definir a origem permitida.
-  // Em dev, FRONTEND_URL pode ser http://localhost:3000 (ou IP local).
-  // Em produção, deve ser o domínio público do frontend (ex: https://apaixonese.saquarema.rj.gov.br).
-  // credentials:true é incompatível com origin:"*", por isso usamos a lista explícita.
-  const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
-    .split(",")
-    .map((o) => o.trim());
-
+  // CORS: credentials:true é incompatível com origin:"*".
+  // Usar uma função que reflete a origem da requisição permite
+  // qualquer cliente (dev + produção) sem bloquear o preflight OPTIONS.
   app.enableCors({
-    origin: (origin, callback) => {
-      // Permite requisições sem origin (ex: Swagger, curl, server-side)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin '${origin}' not allowed by CORS`), false);
-    },
+    origin: (origin, callback) => callback(null, origin ?? true),
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization,Accept",
     credentials: true,
@@ -63,6 +53,5 @@ async function bootstrap() {
   const PORT = process.env.PORT || 6969;
   await app.listen(PORT);
   console.log(`🚀 Servidor rodando em: http://localhost:${PORT}/api`);
-  console.log(`🔒 CORS permitido para: ${allowedOrigins.join(", ")}`);
 }
 bootstrap();
