@@ -7,6 +7,7 @@ import {
   IsEnum,
 } from "class-validator";
 import { TipoRoteiro } from "@prisma/client";
+import { Type } from "class-transformer";
 
 export class CreateAtividadeRequestDto {
   @ApiProperty({
@@ -39,6 +40,7 @@ export class CreateAtividadeRequestDto {
     required: false,
     description: "Latitude para o mapa",
   })
+  @Type(() => Number)
   @IsNumber({}, { message: "A latitude deve ser um número válido" })
   @IsOptional()
   latitude?: number;
@@ -48,6 +50,7 @@ export class CreateAtividadeRequestDto {
     required: false,
     description: "Longitude para o mapa",
   })
+  @Type(() => Number)
   @IsNumber({}, { message: "A longitude deve ser um número válido" })
   @IsOptional()
   longitude?: number;
