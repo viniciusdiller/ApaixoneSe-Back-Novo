@@ -10,21 +10,12 @@ import { join } from "path";
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Define o prefixo global para as rotas da API
   app.setGlobalPrefix("api");
-  app.useStaticAssets(join(__dirname, "..", "uploads"), {
-    prefix: "/api/uploads/",
-  });
-
-  app.useStaticAssets(join(__dirname, "..", "public"), {
-    prefix: "/api/public/",
-  });
 
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ limit: "10mb", extended: true }));
 
-  // CORS: credentials:true é incompatível com origin:"*".
-  // Usar uma função que reflete a origem da requisição permite
-  // qualquer cliente (dev + produção) sem bloquear o preflight OPTIONS.
   app.enableCors({
     origin: (origin, callback) => callback(null, origin ?? true),
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
@@ -42,12 +33,13 @@ async function bootstrap() {
     }),
   );
 
+  // Aqui estão as suas alterações para os arquivos estáticos!
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
-    prefix: "/uploads/",
+    prefix: "/api/uploads/",
   });
 
   app.useStaticAssets(join(__dirname, "..", "public"), {
-    prefix: "/public/",
+    prefix: "/api/public/",
   });
 
   const config = new DocumentBuilder()
@@ -57,10 +49,10 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document);
+  SwaggerModule.setup("api-docs", app, document); // Sugestão: mudar aqui para "api-docs" ou "docs" para não conflitar com a rota "/api"
 
-  const PORT = process.env.PORT || 6969;
+  const PORT = process.env.PORT || 3305;
   await app.listen(PORT);
-  console.log(`🚀 Servidor rodando em: http://localhost:${PORT}/api`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 }
 bootstrap();
