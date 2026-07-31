@@ -45,6 +45,8 @@ async function bootstrap() {
   SwaggerModule.setup("api-docs", app, document);
 
   const PORT = process.env.PORT || 3305;
+  console.log("📂 Caminho UPLOADS:", join(__dirname, "..", "uploads"));
+  console.log("📂 Caminho PUBLIC:", join(__dirname, "..", "public"));
   await app.listen(PORT);
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 }
