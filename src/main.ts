@@ -34,11 +34,11 @@ async function bootstrap() {
   );
 
   // Aqui estão as suas alterações para os arquivos estáticos!
-  app.useStaticAssets(join(__dirname, "..", "uploads"), {
+  app.useStaticAssets(join(process.cwd(), "uploads"), {
     prefix: "/api/uploads/",
   });
 
-  app.useStaticAssets(join(__dirname, "..", "public"), {
+  app.useStaticAssets(join(process.cwd(), "public"), {
     prefix: "/api/public/",
   });
 
