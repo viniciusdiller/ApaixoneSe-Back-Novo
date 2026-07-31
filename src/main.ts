@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { json, urlencoded } from "express";
+import * as express from "express";
 import { join } from "path";
 
 async function bootstrap() {
@@ -13,8 +14,8 @@ async function bootstrap() {
   // Define o prefixo global para as rotas da API
   app.setGlobalPrefix("api");
 
-  app.use(json({ limit: "10mb" }));
-  app.use(urlencoded({ limit: "10mb", extended: true }));
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
   app.enableCors({
     origin: (origin, callback) => callback(null, origin ?? true),
@@ -33,14 +34,8 @@ async function bootstrap() {
     }),
   );
 
-  // Aqui estão as suas alterações para os arquivos estáticos!
-  app.useStaticAssets(join(process.cwd(), "uploads"), {
-    prefix: "/api/uploads/",
-  });
-
-  app.useStaticAssets(join(process.cwd(), "public"), {
-    prefix: "/api/public/",
-  });
+  app.use("/api/uploads", express.static(join(__dirname, "..", "uploads")));
+  app.use("/api/public", express.static(join(__dirname, "..", "public")));
 
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")
