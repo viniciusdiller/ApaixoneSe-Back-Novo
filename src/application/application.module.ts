@@ -20,6 +20,9 @@ import { PontoAguaApplication } from "./applications/pontoAgua.Application";
 import { LocalCulturalApplication } from "./applications/localCultural.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { EmailService } from "./services/email.service";
+import { PlanoViagemPdfService } from "./services/planoViagemPdf.service";
+import { PlanoViagemReminderService } from "./services/planoViagemReminder.service";
+import { PlanoViagemReminderSchedulerService } from "./services/planoViagemReminderScheduler.service";
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { EmailService } from "./services/email.service";
   providers: [
     JwtStrategy,
     EmailService,
+    PlanoViagemPdfService,
+    PlanoViagemReminderService,
+    PlanoViagemReminderSchedulerService,
     UserApplication,
     GastronomiaApplication,
     HospedagemApplication,
@@ -56,6 +62,7 @@ import { EmailService } from "./services/email.service";
     EventoPrincipalApplication,
     AtividadeApplication,
     PlanoViagemApplication,
+    PlanoViagemReminderService,
     ItemPlanoViagemApplication,
     VisitaApplication,
     CatApplication,

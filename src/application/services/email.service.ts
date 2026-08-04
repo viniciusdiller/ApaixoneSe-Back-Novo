@@ -35,9 +35,15 @@ export class EmailService {
     });
   }
 
-  async sendEmail(to: string, subject: string, text: string, html?: string) {
+  async sendEmail(
+    to: string,
+    subject: string,
+    text: string,
+    html?: string,
+    attachments?: nodemailer.SendMailOptions["attachments"],
+  ) {
     if (!this.transporter) {
-      this.logger.warn(`Simulando envio de e-mail para ${to}: ${subject}`);
+      this.logger.warn(`Simulando envio de e-mail para ${to}: ${subject}. Anexos: ${attachments?.length ?? 0}`);
       return;
     }
 
@@ -48,8 +54,9 @@ export class EmailService {
         subject,
         text,
         html,
+        attachments,
       });
-      this.logger.log(`E-mail enviado com sucesso para ${to}`);
+      this.logger.log(`E-mail enviado com sucesso para ${to}. Anexos: ${attachments?.length ?? 0}`);
     } catch (error) {
       this.logger.error(`Erro ao enviar e-mail para ${to}`, error);
       throw error;

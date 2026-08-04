@@ -266,3 +266,77 @@ export function buildForgotPasswordTemplate(
 
   return { subject, text, html };
 }
+
+
+// =========================================================
+// TEMPLATE 3 — Lembrete de Plano de Viagem
+// =========================================================
+
+export interface PlanoViagemReminderTemplateParams {
+  nome: string;
+  tituloPlano: string;
+  dataInicio: Date | string;
+  dataFim: Date | string;
+}
+
+function formatReminderDate(value: Date | string): string {
+  return new Date(value).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function buildPlanoViagemReminderTemplate(
+  params: PlanoViagemReminderTemplateParams,
+): { subject: string; text: string; html: string } {
+  const { nome, tituloPlano, dataInicio, dataFim } = params;
+  const inicioFormatado = formatReminderDate(dataInicio);
+  const fimFormatado = formatReminderDate(dataFim);
+  const subject = "Sua viagem começa em 5 dias — Apaixone-se Saquarema";
+
+  const text = [
+    `Olá, ${nome}!`,
+    ``,
+    `Sua viagem está chegando!`,
+    `Roteiro: ${tituloPlano}`,
+    `Período: ${inicioFormatado} -> ${fimFormatado}`,
+    ``,
+    `Enviamos seu plano de viagem em PDF anexo para facilitar sua organização.`,
+    `Este documento é apenas um planejamento - nenhuma reserva foi efetuada.`,
+    ``,
+    `Boa viagem!`,
+    `Equipe Apaixone-se Saquarema`,
+  ].join("\n");
+
+  const html = baseLayout({
+    title: subject,
+    preheader: `${nome}, seu roteiro ${tituloPlano} está em PDF anexo.`,
+    body: /* html */ `
+      <h1 style="margin:0 0 6px;font-size:22px;font-weight:700;color:#0f172a;">Sua viagem está chegando! 🌊</h1>
+      <p style="margin:0 0 20px;font-size:15px;color:#475569;line-height:1.6;">
+        Olá, <strong>${nome}</strong>! Faltam <strong>5 dias</strong> para o início do seu roteiro em Saquarema.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:24px;">
+        <tr>
+          <td style="background:#eef9f8;border-left:4px solid #0d8a82;border-radius:0 8px 8px 0;padding:16px;">
+            <p style="margin:0 0 6px;font-size:14px;color:#0a4f54;font-weight:700;">${tituloPlano}</p>
+            <p style="margin:0;font-size:14px;color:#475569;">${inicioFormatado} → ${fimFormatado}</p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#475569;line-height:1.6;">
+        O seu plano de viagem está anexado em PDF neste e-mail para você consultar quando quiser.
+      </p>
+
+      <p style="margin:0;font-size:13px;color:#92400e;background:#fffbeb;padding:12px;border-radius:8px;line-height:1.5;">
+        Este documento é apenas um planejamento - nenhuma reserva foi efetuada.
+      </p>
+    `,
+  });
+
+  return { subject, text, html };
+}

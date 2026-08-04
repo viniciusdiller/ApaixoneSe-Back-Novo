@@ -378,6 +378,7 @@ model PlanoViagem {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  lembreteEmailEnviadoEm DateTime?
 
   @@map("planos_viagem")
 }

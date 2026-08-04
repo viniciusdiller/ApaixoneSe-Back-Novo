@@ -3,7 +3,7 @@ import { PrismaService } from "../providers/db/prisma.Service";
 import { IPlanoViagemRepository } from "../interfaces/iPlanoViagem.Interface";
 import { PlanoViagem } from "../entities/planoViagem.Entity";
 
-const itensInclude = {
+export const itensInclude = {
   itens: {
     include: {
       gastronomia: { select: { id: true, nome: true, endereco: true, logoUrl: true } },
@@ -48,6 +48,33 @@ export class PlanoViagemRepository implements IPlanoViagemRepository {
     });
     if (!p) return null;
     return new PlanoViagem(p as any);
+  }
+
+  async findByIdWithUsuarioAndItens(id: string): Promise<any | null> {
+    return this.prisma.planoViagem.findUnique({
+      where: { id },
+      include: {
+        ...itensInclude,
+        usuario: { select: { id: true, nome: true, email: true } },
+      },
+    });
+  }
+
+  async findPendingLembretesByDataInicio(start: Date, end: Date): Promise<any[]> {
+    return this.prisma.planoViagem.findMany({
+      where: {
+        dataInicio: { gte: start, lt: end },
+        lembreteEmailEnviadoEm: null,
+      } as any,
+      select: { id: true },
+    });
+  }
+
+  async markLembreteEmailEnviado(id: string): Promise<void> {
+    await this.prisma.planoViagem.update({
+      where: { id },
+      data: { lembreteEmailEnviadoEm: new Date() } as any,
+    });
   }
 
   async update(id: string, data: Partial<PlanoViagem>): Promise<PlanoViagem> {
