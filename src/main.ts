@@ -48,6 +48,6 @@ async function bootstrap() {
   console.log("📂 Caminho UPLOADS:", join(__dirname, "..", "uploads"));
   console.log("📂 Caminho PUBLIC:", join(__dirname, "..", "public"));
   await app.listen(PORT);
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Swagger disponível em: http://localhost:${PORT}/api-docs`);
 }
 bootstrap();
