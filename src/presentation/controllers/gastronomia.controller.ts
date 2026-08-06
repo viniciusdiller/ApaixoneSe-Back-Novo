@@ -32,6 +32,7 @@ import { GastronomiaApplication } from "../../application/applications/gastronom
 import { CreateGastronomiaRequestDto } from "../dto/request/gastronomia/createGastronomiaRequestDto";
 import { UpdateGastronomiaRequestDto } from "../dto/request/gastronomia/updateGastronomiaRequestDto";
 import { GastronomiaResponseDto } from "../dto/response/gastronomiaResponse.dto";
+import { randomUUID } from "crypto";
 
 // FUNÇÃO AUXILIAR: Transforma "Restaurante do João!" em "restaurante_do_joao"
 function sanitizarNomePasta(nome: string): string {
@@ -94,14 +95,14 @@ export class GastronomiaController {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const logoNome = `logo.webp`;
+    const logoNome = `logo_${Date.now()}.webp`;
     const logoCaminhoFisico = path.join(uploadDir, logoNome);
     await sharp(logoFile.buffer)
       .resize(500)
       .webp({ quality: 80 })
       .toFile(logoCaminhoFisico);
 
-    const pdfNome = `documento.pdf`;
+    const pdfNome = `documento_${Date.now()}.pdf`;
     const pdfCaminhoFisico = path.join(uploadDir, pdfNome);
     fs.writeFileSync(pdfCaminhoFisico, pdfFile.buffer);
 
@@ -176,7 +177,7 @@ export class GastronomiaController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo.webp`;
+      const logoNome = `logo_${Date.now()}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -188,7 +189,7 @@ export class GastronomiaController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const pdfNome = `documento.pdf`;
+      const pdfNome = `documento_${Date.now()}.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/gastronomia/${nomePastaLimpo}/${pdfNome}`;
     }

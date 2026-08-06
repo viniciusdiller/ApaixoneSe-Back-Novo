@@ -32,6 +32,7 @@ import { HospedagemApplication } from "../../application/applications/hospedagem
 import { CreateHospedagemRequestDto } from "../dto/request/hospedagem/createHospedagemRequestDto";
 import { UpdateHospedagemRequestDto } from "../dto/request/hospedagem/updateHospedagemRequestDto";
 import { HospedagemResponseDto } from "../dto/response/hospedagemResponse.dto";
+import { randomUUID } from "crypto";
 
 function sanitizarNomePasta(nome: string): string {
   return nome
@@ -80,12 +81,12 @@ export class HospedagemController {
     const uploadDir = `./uploads/hospedagem/${nomePastaLimpo}`;
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    const logoNome = `logo.webp`;
+    const logoNome = `logo_${Date.now()}.webp`;
     await sharp(logoFile.buffer)
       .resize(500)
       .webp({ quality: 80 })
       .toFile(path.join(uploadDir, logoNome));
-    const pdfNome = `documento.pdf`;
+    const pdfNome = `documento_${Date.now()}.pdf`; 
     fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
 
     const logoUrl = `/uploads/hospedagem/${nomePastaLimpo}/${logoNome}`;
@@ -158,7 +159,7 @@ export class HospedagemController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo.webp`;
+      const logoNome = `logo_${Date.now()}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -170,7 +171,7 @@ export class HospedagemController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const pdfNome = `documento.pdf`;
+      const pdfNome = `documento_${Date.now()}.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/hospedagem/${nomePastaLimpo}/${pdfNome}`;
     }
