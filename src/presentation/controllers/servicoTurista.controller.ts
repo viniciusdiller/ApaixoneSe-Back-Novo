@@ -107,7 +107,7 @@ export class ServicoTuristaController {
     let logoUrl, fotoUrl, comprovanteUrl;
 
     if (logoFile) {
-      const logoNome = `logo.webp`;
+      const logoNome = `logo_${Date.now()}.webp`; 
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -116,7 +116,7 @@ export class ServicoTuristaController {
     }
 
     if (fotoFile) {
-      const fotoNome = `foto.webp`;
+      const fotoNome = `foto_${Date.now()}.webp`; 
       await sharp(fotoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -128,14 +128,14 @@ export class ServicoTuristaController {
       const ext = path.extname(comprovanteFile.originalname).toLowerCase();
 
       if (ext === ".pdf") {
-        const comprovanteNome = `comprovante.pdf`;
+        const comprovanteNome = `comprovante_${Date.now()}.pdf`; 
         fs.writeFileSync(
           path.join(uploadDir, comprovanteNome),
           comprovanteFile.buffer,
         );
         comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
       } else {
-        const comprovanteNome = `comprovante.webp`;
+        const comprovanteNome = `comprovante_${Date.now()}.webp`; 
         await sharp(comprovanteFile.buffer)
           .resize(800)
           .webp({ quality: 80 })
@@ -208,8 +208,7 @@ export class ServicoTuristaController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const hash = randomUUID(); // Gera o hash único
-      const logoNome = `logo-${hash}.webp`; // Novo nome dinâmico
+      const logoNome = `logo_${Date.now()}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -220,8 +219,7 @@ export class ServicoTuristaController {
     if (fotoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const hash = randomUUID(); // Gera o hash único
-      const fotoNome = `foto-${hash}.webp`; // Novo nome dinâmico
+      const fotoNome = `foto_${Date.now()}.webp`; 
       await sharp(fotoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -231,17 +229,16 @@ export class ServicoTuristaController {
 
     if (comprovanteFile) {
       const ext = path.extname(comprovanteFile.originalname).toLowerCase();
-      const hash = randomUUID(); // Gera o hash único
 
       if (ext === ".pdf") {
-        const comprovanteNome = `comprovante-${hash}.pdf`;
+        const comprovanteNome = `comprovante_${Date.now()}.pdf`;
         fs.writeFileSync(
           path.join(uploadDir, comprovanteNome),
           comprovanteFile.buffer,
         );
         comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
       } else {
-        const comprovanteNome = `comprovante-${hash}.webp`;
+        const comprovanteNome = `comprovante_${Date.now()}.webp`;
         await sharp(comprovanteFile.buffer)
           .resize(800)
           .webp({ quality: 80 })

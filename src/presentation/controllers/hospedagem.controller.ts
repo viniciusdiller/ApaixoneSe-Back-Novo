@@ -81,12 +81,12 @@ export class HospedagemController {
     const uploadDir = `./uploads/hospedagem/${nomePastaLimpo}`;
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    const logoNome = `logo.webp`;
+    const logoNome = `logo_${Date.now()}.webp`;
     await sharp(logoFile.buffer)
       .resize(500)
       .webp({ quality: 80 })
       .toFile(path.join(uploadDir, logoNome));
-    const pdfNome = `documento.pdf`;
+    const pdfNome = `documento_${Date.now()}.pdf`; 
     fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
 
     const logoUrl = `/uploads/hospedagem/${nomePastaLimpo}/${logoNome}`;
@@ -159,8 +159,7 @@ export class HospedagemController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const hash = randomUUID();
-      const logoNome = `logo-${hash}.webp`;
+      const logoNome = `logo_${Date.now()}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -172,8 +171,7 @@ export class HospedagemController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const hash = randomUUID();
-      const pdfNome = `documento-${hash}.pdf`;
+      const pdfNome = `documento_${Date.now()}.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/hospedagem/${nomePastaLimpo}/${pdfNome}`;
     }
