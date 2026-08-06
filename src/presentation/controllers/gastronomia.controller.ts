@@ -32,6 +32,7 @@ import { GastronomiaApplication } from "../../application/applications/gastronom
 import { CreateGastronomiaRequestDto } from "../dto/request/gastronomia/createGastronomiaRequestDto";
 import { UpdateGastronomiaRequestDto } from "../dto/request/gastronomia/updateGastronomiaRequestDto";
 import { GastronomiaResponseDto } from "../dto/response/gastronomiaResponse.dto";
+import { randomUUID } from "crypto";
 
 // FUNÇÃO AUXILIAR: Transforma "Restaurante do João!" em "restaurante_do_joao"
 function sanitizarNomePasta(nome: string): string {
@@ -176,7 +177,8 @@ export class GastronomiaController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo.webp`;
+      const hash = randomUUID();
+      const logoNome = `logo-${hash}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -188,7 +190,8 @@ export class GastronomiaController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const pdfNome = `documento.pdf`;
+      const hash = randomUUID();
+      const pdfNome = `documento-${hash}.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/gastronomia/${nomePastaLimpo}/${pdfNome}`;
     }

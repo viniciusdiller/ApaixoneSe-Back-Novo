@@ -32,6 +32,7 @@ import { HospedagemApplication } from "../../application/applications/hospedagem
 import { CreateHospedagemRequestDto } from "../dto/request/hospedagem/createHospedagemRequestDto";
 import { UpdateHospedagemRequestDto } from "../dto/request/hospedagem/updateHospedagemRequestDto";
 import { HospedagemResponseDto } from "../dto/response/hospedagemResponse.dto";
+import { randomUUID } from "crypto";
 
 function sanitizarNomePasta(nome: string): string {
   return nome
@@ -158,7 +159,8 @@ export class HospedagemController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo.webp`;
+      const hash = randomUUID();
+      const logoNome = `logo-${hash}.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -170,7 +172,8 @@ export class HospedagemController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const pdfNome = `documento.pdf`;
+      const hash = randomUUID();
+      const pdfNome = `documento-${hash}.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/hospedagem/${nomePastaLimpo}/${pdfNome}`;
     }
