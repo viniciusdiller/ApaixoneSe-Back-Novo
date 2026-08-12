@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsBoolean,
   IsNumber,
+  MaxLength,
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import { TipoPontoAgua } from "@prisma/client";
@@ -19,6 +20,7 @@ export class CreatePontoAguaRequestDto {
   @ApiProperty({ example: "Praia de Itaúna" })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
+  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -27,6 +29,9 @@ export class CreatePontoAguaRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição curta é obrigatória." })
+  @MaxLength(191, {
+    message: "A descrição curta deve ter no máximo 191 caracteres.",
+  })
   descricaoCurta!: string;
 
   @ApiProperty({
@@ -36,6 +41,9 @@ export class CreatePontoAguaRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
+  @MaxLength(5000, {
+    message: "A descrição deve ter no máximo 5000 caracteres.",
+  })
   descricao!: string;
 
   @ApiPropertyOptional({
@@ -45,6 +53,9 @@ export class CreatePontoAguaRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(1000, {
+    message: "A lista de filtros deve ter no máximo 1000 caracteres.",
+  })
   filtros?: string;
 
   @ApiPropertyOptional({ example: "true" })
@@ -60,11 +71,15 @@ export class CreatePontoAguaRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(20, {
+    message: "A dificuldade deve ter no máximo 20 caracteres.",
+  })
   dificuldade?: string;
 
   @ApiPropertyOptional({ example: "Rua Principal, 123 - Centro, Saquarema - RJ" })
   @IsOptional()
   @IsString()
+  @MaxLength(191, { message: "O endereço deve ter no máximo 191 caracteres." })
   endereco?: string;
 
   @ApiPropertyOptional({ example: "true" })

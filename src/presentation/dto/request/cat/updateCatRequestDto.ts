@@ -1,5 +1,5 @@
 import { PartialType, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 import { CreateCatRequestDto } from "./createCatRequestDto";
 
 export class UpdateCatRequestDto extends PartialType(CreateCatRequestDto) {
@@ -10,5 +10,8 @@ export class UpdateCatRequestDto extends PartialType(CreateCatRequestDto) {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(4000, {
+    message: "A ordem enviada excedeu o tamanho máximo permitido.",
+  })
   ordem?: string;
 }

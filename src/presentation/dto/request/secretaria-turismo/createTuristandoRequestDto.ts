@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, IsInt } from "class-validator";
+import { IsNotEmpty, IsString, IsInt, MaxLength } from "class-validator";
 
 export class CreateTuristandoRequestDto {
   @ApiProperty({
@@ -8,6 +8,7 @@ export class CreateTuristandoRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
   titulo!: string;
 
   @ApiProperty({
@@ -16,6 +17,7 @@ export class CreateTuristandoRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(3000, { message: "O texto deve ter no máximo 3000 caracteres." })
   texto!: string;
 
   @ApiProperty({

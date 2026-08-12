@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, MaxLength } from "class-validator";
 
 export class CreateSecretariaRequestDto {
   @ApiProperty({
@@ -8,6 +8,9 @@ export class CreateSecretariaRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(5000, {
+    message: "O texto explicativo deve ter no máximo 5000 caracteres.",
+  })
   textoExplicativo!: string;
 
   @ApiProperty({

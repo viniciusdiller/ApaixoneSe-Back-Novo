@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
 export class UpdateProjetoRequestDto {
   @ApiProperty({
@@ -9,6 +9,7 @@ export class UpdateProjetoRequestDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
   titulo?: string;
 
   @ApiProperty({
@@ -18,6 +19,9 @@ export class UpdateProjetoRequestDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(3000, {
+    message: "A descrição deve ter no máximo 3000 caracteres.",
+  })
   descricao?: string;
 
   @ApiProperty({

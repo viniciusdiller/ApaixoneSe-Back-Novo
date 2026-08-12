@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
 export class UpdateFiquePorDentroRequestDto {
   @ApiPropertyOptional({
@@ -8,5 +8,6 @@ export class UpdateFiquePorDentroRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(1, { message: 'A ordem deve ser um único dígito de "1" a "5".' })
   ordem?: string;
 }
