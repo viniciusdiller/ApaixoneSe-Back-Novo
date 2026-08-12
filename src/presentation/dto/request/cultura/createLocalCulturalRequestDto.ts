@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateLocalCulturalRequestDto {
   @ApiProperty({
@@ -8,6 +8,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
+  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -17,6 +18,9 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
+  @MaxLength(1000, {
+    message: "A descrição deve ter no máximo 1000 caracteres.",
+  })
   descricao!: string;
 
   @ApiProperty({
@@ -25,6 +29,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O texto é obrigatório." })
+  @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
   texto!: string;
 
   @ApiPropertyOptional({
@@ -37,5 +42,6 @@ export class CreateLocalCulturalRequestDto {
   @ApiPropertyOptional({ example: "Rua Principal, 123 - Centro, Saquarema - RJ" })
   @IsOptional()
   @IsString()
+  @MaxLength(191, { message: "O endereço deve ter no máximo 191 caracteres." })
   endereco?: string;
 }

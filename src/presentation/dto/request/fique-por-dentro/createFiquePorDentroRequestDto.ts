@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty } from "class-validator";
+import { IsString, IsNotEmpty, MaxLength } from "class-validator";
 
 export class CreateFiquePorDentroRequestDto {
   @ApiProperty({
@@ -9,6 +9,7 @@ export class CreateFiquePorDentroRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(1, { message: 'A ordem deve ser um único dígito de "1" a "5".' })
   ordem!: string;
 
   @ApiProperty({

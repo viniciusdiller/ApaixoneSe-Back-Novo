@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateCatMovelRequestDto {
   @ApiProperty({
@@ -8,6 +8,7 @@ export class CreateCatMovelRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
   titulo!: string;
 
   @ApiProperty({
@@ -16,6 +17,9 @@ export class CreateCatMovelRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2000, {
+    message: "A descrição deve ter no máximo 2000 caracteres.",
+  })
   descricao!: string;
 
   @ApiPropertyOptional({
@@ -46,5 +50,8 @@ export class CreateCatMovelRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(4000, {
+    message: "A ordem enviada excedeu o tamanho máximo permitido.",
+  })
   ordem?: string;
 }
