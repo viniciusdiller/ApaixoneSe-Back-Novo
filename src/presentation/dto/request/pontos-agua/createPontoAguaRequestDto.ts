@@ -20,7 +20,7 @@ export class CreatePontoAguaRequestDto {
   @ApiProperty({ example: "Praia de Itaúna" })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
-  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
+  @MaxLength(100, { message: "O nome deve ter no máximo 100 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -41,8 +41,8 @@ export class CreatePontoAguaRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
-  @MaxLength(5000, {
-    message: "A descrição deve ter no máximo 5000 caracteres.",
+  @MaxLength(3000, {
+    message: "A descrição deve ter no máximo 3000 caracteres.",
   })
   descricao!: string;
 

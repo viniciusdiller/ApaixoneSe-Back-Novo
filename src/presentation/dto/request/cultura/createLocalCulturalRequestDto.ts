@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateLocalCulturalRequestDto {
@@ -8,7 +9,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
-  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
+  @MaxLength(100, { message: "O nome deve ter no máximo 100 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -18,8 +19,8 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
-  @MaxLength(1000, {
-    message: "A descrição deve ter no máximo 1000 caracteres.",
+  @MaxLength(150, {
+    message: "A descrição deve ter no máximo 150 caracteres.",
   })
   descricao!: string;
 

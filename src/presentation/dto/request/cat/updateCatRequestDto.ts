@@ -10,8 +10,5 @@ export class UpdateCatRequestDto extends PartialType(CreateCatRequestDto) {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(4000, {
-    message: "A ordem enviada excedeu o tamanho máximo permitido.",
-  })
   ordem?: string;
 }
