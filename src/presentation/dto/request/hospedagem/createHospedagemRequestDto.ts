@@ -16,7 +16,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(120)
+  @MaxLength(120, {
+    message: "O nome informado é muito longo.",
+  })
   nome!: string;
 
   @ApiProperty({
@@ -25,7 +27,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(20)
+  @MaxLength(20, {
+    message: "O telefone informado é muito longo.",
+  })
   telefone!: string;
 
   @ApiProperty({
@@ -52,9 +56,14 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(20)
+  @ArrayMaxSize(20, {
+    message: "A hospedagem possui tags demais. Remova algumas e tente novamente.",
+  })
   @IsString({ each: true })
-  @MaxLength(40, { each: true })
+  @MaxLength(40, {
+    each: true,
+    message: "Uma das tags informadas é muito longa.",
+  })
   tags?: string[];
 
   @ApiProperty({
@@ -63,7 +72,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(60)
+  @MaxLength(60, {
+    message: "O Instagram informado é muito longo.",
+  })
   instagram?: string;
 
   @ApiProperty({
@@ -73,7 +84,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(191)
+  @MaxLength(191, {
+    message: "O site informado é muito longo.",
+  })
   site?: string;
 
   @ApiProperty({
@@ -82,7 +95,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(191)
+  @MaxLength(191, {
+    message: "O endereço informado é muito longo.",
+  })
   endereco!: string;
 
   @ApiProperty({
@@ -91,7 +106,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(2000)
+  @MaxLength(2000, {
+    message: "O texto diferencial informado é muito longo.",
+  })
   textoDiferencial!: string;
 
   @ApiProperty({
@@ -100,7 +117,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(18)
+  @MaxLength(18, {
+    message: "O CNPJ informado é muito longo.",
+  })
   cnpj!: string;
 
   @ApiProperty({
@@ -109,7 +128,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(120)
+  @MaxLength(120, {
+    message: "O nome do responsável informado é muito longo.",
+  })
   responsavelNome!: string;
 
   @ApiProperty({
@@ -117,7 +138,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(14)
+  @MaxLength(14, {
+    message: "O CPF do responsável informado é muito longo.",
+  })
   responsavelCpf!: string;
 
   @ApiProperty({

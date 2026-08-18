@@ -11,13 +11,17 @@ export class CreateEventoPrincipalRequestDto {
   @ApiProperty({ example: "Saquarema Pro 2026" })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O título informado é muito longo.",
+  })
   titulo!: string;
 
   @ApiProperty({ example: "WSL Championship Tour", required: false })
   @IsString()
   @IsOptional()
-  @MaxLength(100)
+  @MaxLength(100, {
+    message: "A etapa informada é muito longa.",
+  })
   etapa?: string;
 
   @ApiProperty({ example: "2026-06-20T00:00:00Z" })

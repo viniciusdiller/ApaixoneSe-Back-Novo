@@ -8,7 +8,9 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O nome deve ser uma string válida." })
   @IsNotEmpty({ message: "O nome não pode estar vazio." })
-  @MaxLength(120)
+  @MaxLength(120, {
+    message: "O nome informado é muito longo.",
+  })
   nome?: string;
 
   @ApiProperty({
@@ -17,7 +19,9 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O telefone deve ser uma string válida." })
   @IsNotEmpty({ message: "O telefone não pode estar vazio." })
-  @MaxLength(20)
+  @MaxLength(20, {
+    message: "O telefone informado é muito longo.",
+  })
   telefone?: string;
 
   @ApiProperty({
@@ -26,7 +30,9 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O endereço deve ser uma string válida." })
   @IsNotEmpty({ message: "O endereço não pode estar vazio." })
-  @MaxLength(191)
+  @MaxLength(191, {
+    message: "O endereço informado é muito longo.",
+  })
   endereco?: string;
 
   @ApiProperty({

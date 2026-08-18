@@ -17,7 +17,9 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório" })
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O nome informado é muito longo.",
+  })
   nome!: string;
 
   @ApiProperty({
@@ -26,13 +28,17 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome de utilizador é obrigatório" })
-  @MaxLength(30)
+  @MaxLength(30, {
+    message: "O nome de usuário informado é muito longo.",
+  })
   usuario!: string;
 
   @ApiProperty({ example: "vinicius@email.com", description: "Email válido" })
   @IsEmail({}, { message: "Forneça um email válido" })
   @IsNotEmpty({ message: "O email é obrigatório" })
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O e-mail informado é muito longo.",
+  })
   email!: string;
 
   @ApiProperty({
@@ -42,7 +48,9 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @MinLength(6, { message: "A senha deve ter pelo menos 6 caracteres" })
-  @MaxLength(64)
+  @MaxLength(64, {
+    message: "A senha informada é muito longa.",
+  })
   senha!: string;
 
   @ApiProperty({

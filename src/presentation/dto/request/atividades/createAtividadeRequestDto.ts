@@ -17,7 +17,9 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O título é obrigatório" })
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O título informado é muito longo.",
+  })
   titulo!: string;
 
   @ApiProperty({
@@ -27,7 +29,9 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória" })
-  @MaxLength(3000)
+  @MaxLength(3000, {
+    message: "A descrição informada é muito longa.",
+  })
   descricao!: string;
 
   @ApiProperty({
@@ -36,7 +40,9 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O local informado é muito longo.",
+  })
   local!: string;
 
   @ApiProperty({

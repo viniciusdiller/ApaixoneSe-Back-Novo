@@ -17,6 +17,8 @@ export class ResetPasswordRequestDto {
   })
   @IsString()
   @MinLength(6, { message: "A senha deve ter pelo menos 6 caracteres" })
-  @MaxLength(64)
+  @MaxLength(64, {
+    message: "A senha informada é muito longa.",
+  })
   senha!: string;
 }

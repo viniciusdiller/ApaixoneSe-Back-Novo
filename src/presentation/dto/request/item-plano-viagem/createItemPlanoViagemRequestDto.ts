@@ -23,7 +23,9 @@ export class CreateItemPlanoViagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(1000, {
+    message: "A anotação informada é muito longa.",
+  })
   anotacao?: string;
 
   @ApiProperty({ description: "ID do Plano de Viagem (Pai)" })

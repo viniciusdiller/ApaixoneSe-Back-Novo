@@ -8,12 +8,16 @@ export class LoginRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O identificador é obrigatório" })
-  @MaxLength(150)
+  @MaxLength(150, {
+    message: "O identificador informado é muito longo.",
+  })
   identificador!: string;
 
   @ApiProperty({ example: "SenhaSegura123!" })
   @IsString()
   @IsNotEmpty({ message: "A senha é obrigatória" })
-  @MaxLength(64)
+  @MaxLength(64, {
+    message: "A senha informada é muito longa.",
+  })
   senha!: string;
 }
