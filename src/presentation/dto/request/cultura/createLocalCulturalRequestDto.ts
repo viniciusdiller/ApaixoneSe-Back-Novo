@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateLocalCulturalRequestDto {
@@ -19,6 +19,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
+  @NormalizeMultipartText()
   @MaxLength(150, {
     message: "A descrição deve ter no máximo 150 caracteres.",
   })
@@ -30,6 +31,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O texto é obrigatório." })
+  @NormalizeMultipartText()
   @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
   texto!: string;
 

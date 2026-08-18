@@ -1,3 +1,4 @@
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
 
@@ -17,6 +18,7 @@ export class CreateCatMovelRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @NormalizeMultipartText()
   @MaxLength(5000, {
     message: "A descrição deve ter no máximo 5000 caracteres.",
   })

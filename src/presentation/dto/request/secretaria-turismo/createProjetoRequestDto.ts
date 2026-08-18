@@ -1,3 +1,4 @@
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
 
@@ -17,6 +18,7 @@ export class CreateProjetoRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @NormalizeMultipartText()
   @MaxLength(3000, {
     message: "A descrição deve ter no máximo 3000 caracteres.",
   })

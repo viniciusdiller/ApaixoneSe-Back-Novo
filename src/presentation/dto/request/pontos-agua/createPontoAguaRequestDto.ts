@@ -1,3 +1,4 @@
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
@@ -41,6 +42,7 @@ export class CreatePontoAguaRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
+  @NormalizeMultipartText()
   @MaxLength(3000, {
     message: "A descrição deve ter no máximo 3000 caracteres.",
   })

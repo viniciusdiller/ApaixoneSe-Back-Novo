@@ -1,3 +1,4 @@
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString, MaxLength } from "class-validator";
 
@@ -9,6 +10,7 @@ export class UpdateSecretariaRequestDto {
   })
   @IsString()
   @IsOptional()
+  @NormalizeMultipartText()
   @MaxLength(5000, {
     message: "O texto explicativo deve ter no máximo 5000 caracteres.",
   })
