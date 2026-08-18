@@ -6,6 +6,7 @@ import {
   MinLength,
   IsOptional,
   IsEnum,
+  MaxLength,
 } from "class-validator";
 import { PerfilUsuario } from "../../../../data/entities/user.Entity";
 
@@ -16,6 +17,7 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório" })
+  @MaxLength(150)
   nome!: string;
 
   @ApiProperty({
@@ -24,11 +26,13 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome de utilizador é obrigatório" })
+  @MaxLength(30)
   usuario!: string;
 
   @ApiProperty({ example: "vinicius@email.com", description: "Email válido" })
   @IsEmail({}, { message: "Forneça um email válido" })
   @IsNotEmpty({ message: "O email é obrigatório" })
+  @MaxLength(150)
   email!: string;
 
   @ApiProperty({
@@ -38,6 +42,7 @@ export class CreateUserRequestDto {
   })
   @IsString()
   @MinLength(6, { message: "A senha deve ter pelo menos 6 caracteres" })
+  @MaxLength(64)
   senha!: string;
 
   @ApiProperty({

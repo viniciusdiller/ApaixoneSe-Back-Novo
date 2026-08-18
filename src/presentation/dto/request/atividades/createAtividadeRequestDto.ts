@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  MaxLength,
 } from "class-validator";
 import { TipoRoteiro } from "@prisma/client";
 import { Type } from "class-transformer";
@@ -16,6 +17,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O título é obrigatório" })
+  @MaxLength(150)
   titulo!: string;
 
   @ApiProperty({
@@ -25,6 +27,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória" })
+  @MaxLength(3000)
   descricao!: string;
 
   @ApiProperty({
@@ -33,6 +36,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
+  @MaxLength(150)
   local!: string;
 
   @ApiProperty({

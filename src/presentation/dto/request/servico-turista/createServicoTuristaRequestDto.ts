@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
   ValidateIf,
+  MaxLength,
 } from "class-validator";
 import { TipoServicoTurista, TipoRoteiro } from "@prisma/client";
 
@@ -14,16 +15,20 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty()
   tipo!: TipoServicoTurista;
 
+  @MaxLength(120)
   @ApiProperty() @IsString() @IsNotEmpty() nome!: string;
+  @MaxLength(20)
   @ApiProperty() @IsString() @IsNotEmpty() telefone!: string;
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(60)
   instagram?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(191)
   endereco?: string;
 
   @ApiProperty({
@@ -33,6 +38,7 @@ export class CreateServicoTuristaRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(191)
   site?: string;
 
   @ApiProperty({
@@ -60,6 +66,7 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty({
     message: "A descrição é obrigatória para este tipo de serviço.",
   })
+  @MaxLength(2000)
   descricao?: string;
 
   // ==========================================
@@ -69,6 +76,7 @@ export class CreateServicoTuristaRequestDto {
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
   @IsString()
   @IsNotEmpty({ message: "O CNPJ é obrigatório para Guias." })
+  @MaxLength(18)
   cnpj?: string;
 
   @ApiProperty({ enum: TipoRoteiro, required: false })
@@ -81,6 +89,7 @@ export class CreateServicoTuristaRequestDto {
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
   @IsString()
   @IsNotEmpty({ message: "Os idiomas são obrigatórios para Guias." })
+  @MaxLength(150)
   idiomas?: string;
 
   // ==========================================

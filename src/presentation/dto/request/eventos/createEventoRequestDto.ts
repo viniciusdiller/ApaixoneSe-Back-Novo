@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsDateString, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsOptional,
+  MaxLength,
+} from "class-validator";
 
 export class CreateEventoRequestDto {
   @ApiProperty({
@@ -8,6 +14,7 @@ export class CreateEventoRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O título é obrigatório" })
+  @MaxLength(150)
   titulo!: string;
 
   @ApiProperty({
@@ -16,6 +23,7 @@ export class CreateEventoRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória" })
+  @MaxLength(3000)
   descricao!: string;
 
   @ApiProperty({
@@ -29,11 +37,13 @@ export class CreateEventoRequestDto {
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
+  @MaxLength(150)
   local!: string;
 
   @ApiPropertyOptional({ example: "Av. Sampaio Corrêa, 500 - Saquarema - RJ" })
   @IsOptional()
   @IsString()
+  @MaxLength(191)
   endereco?: string;
 
   @ApiProperty({

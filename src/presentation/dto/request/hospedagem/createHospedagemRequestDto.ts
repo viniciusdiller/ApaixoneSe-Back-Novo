@@ -1,5 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from "class-validator";
+import { Transform } from "class-transformer";
 
 export class CreateHospedagemRequestDto {
   @ApiProperty({
@@ -8,6 +16,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   nome!: string;
 
   @ApiProperty({
@@ -16,6 +25,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   telefone!: string;
 
   @ApiProperty({
@@ -24,8 +34,28 @@ export class CreateHospedagemRequestDto {
     required: false,
     example: ["Wi-Fi", "Ar Condicionado", "Piscina"],
   })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  })
   @IsOptional()
-  tags?: any;
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  tags?: string[];
 
   @ApiProperty({
     example: "@pousadaVivaMar",
@@ -33,6 +63,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(60)
   instagram?: string;
 
   @ApiProperty({
@@ -42,6 +73,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(191)
   site?: string;
 
   @ApiProperty({
@@ -50,6 +82,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(191)
   endereco!: string;
 
   @ApiProperty({
@@ -58,6 +91,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2000)
   textoDiferencial!: string;
 
   @ApiProperty({
@@ -66,6 +100,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(18)
   cnpj!: string;
 
   @ApiProperty({
@@ -74,6 +109,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   responsavelNome!: string;
 
   @ApiProperty({
@@ -81,6 +117,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(14)
   responsavelCpf!: string;
 
   @ApiProperty({

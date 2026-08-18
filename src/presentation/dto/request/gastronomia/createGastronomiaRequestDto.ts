@@ -4,22 +4,26 @@ import {
   IsNotEmpty,
   IsOptional,
   IsDateString,
+  MaxLength,
 } from "class-validator";
 
 export class CreateGastronomiaRequestDto {
   @ApiProperty({ example: "Vinecao Restaurante" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   nome!: string;
 
   @ApiProperty({ example: "2299938764" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   telefone!: string;
 
   @ApiProperty({ required: false, example: "vineco" })
   @IsString()
   @IsOptional()
+  @MaxLength(60)
   instagram?: string;
 
   @ApiProperty({
@@ -34,26 +38,31 @@ export class CreateGastronomiaRequestDto {
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2 - Saquarema" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(191)
   endereco!: string;
 
   @ApiProperty({ required: false, example: "Frutos do Mar e Grelhados" })
   @IsString()
   @IsOptional()
+  @MaxLength(80)
   especialidade?: string;
 
   @ApiProperty({ example: "22897452000164" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(18)
   cnpj!: string;
 
   @ApiProperty({ example: "Vinícius Diller" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   responsavelNome!: string;
 
   @ApiProperty({ example: "17829397767" })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(14)
   responsavelCpf!: string;
 
   // Os Ficheiros:

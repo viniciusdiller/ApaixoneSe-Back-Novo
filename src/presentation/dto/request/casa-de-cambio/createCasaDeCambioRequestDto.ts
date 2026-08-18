@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty } from "class-validator"; // 👈 Importação necessária
+import { IsString, IsNotEmpty, MaxLength } from "class-validator"; // 👈 Importação necessária
 
 export class CreateCasaDeCambioRequestDto {
   @ApiProperty({
@@ -8,6 +8,7 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O nome deve ser uma string válida." })
   @IsNotEmpty({ message: "O nome não pode estar vazio." })
+  @MaxLength(120)
   nome?: string;
 
   @ApiProperty({
@@ -16,6 +17,7 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O telefone deve ser uma string válida." })
   @IsNotEmpty({ message: "O telefone não pode estar vazio." })
+  @MaxLength(20)
   telefone?: string;
 
   @ApiProperty({
@@ -24,6 +26,7 @@ export class CreateCasaDeCambioRequestDto {
   })
   @IsString({ message: "O endereço deve ser uma string válida." })
   @IsNotEmpty({ message: "O endereço não pode estar vazio." })
+  @MaxLength(191)
   endereco?: string;
 
   @ApiProperty({
