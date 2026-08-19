@@ -8,6 +8,7 @@ import {
   MaxLength,
 } from "class-validator";
 import { TipoServicoTurista, TipoRoteiro } from "@prisma/client";
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateServicoTuristaRequestDto {
   @ApiProperty({ enum: TipoServicoTurista })
@@ -22,6 +23,7 @@ export class CreateServicoTuristaRequestDto {
   @MaxLength(20, {
     message: "O telefone informado é muito longo.",
   })
+  @OnlyDigits()
   @ApiProperty() @IsString() @IsNotEmpty() telefone!: string;
   @ApiProperty({ required: false })
   @IsOptional()
@@ -86,6 +88,7 @@ export class CreateServicoTuristaRequestDto {
   // ==========================================
   @ApiProperty({ required: false })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty({ message: "O CNPJ é obrigatório para Guias." })
   @MaxLength(18, {

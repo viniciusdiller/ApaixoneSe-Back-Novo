@@ -9,6 +9,7 @@
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "seed:admin": "ts-node --project tsconfig.json scripts/seed-admin.ts",
+    "cleanup:documents": "ts-node --project tsconfig.json scripts/cleanup-formatted-documents.ts",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "keywords": [],

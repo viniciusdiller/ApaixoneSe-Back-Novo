@@ -6,6 +6,7 @@ import {
   IsDateString,
   MaxLength,
 } from "class-validator";
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateGastronomiaRequestDto {
   @ApiProperty({ example: "Vinecao Restaurante" })
@@ -17,6 +18,7 @@ export class CreateGastronomiaRequestDto {
   nome!: string;
 
   @ApiProperty({ example: "2299938764" })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(20, {
@@ -58,6 +60,7 @@ export class CreateGastronomiaRequestDto {
   especialidade?: string;
 
   @ApiProperty({ example: "22897452000164" })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(18, {
@@ -74,6 +77,7 @@ export class CreateGastronomiaRequestDto {
   responsavelNome!: string;
 
   @ApiProperty({ example: "17829397767" })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(14, {

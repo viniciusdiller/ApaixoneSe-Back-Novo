@@ -8,6 +8,7 @@ import {
   MaxLength,
 } from "class-validator";
 import { Transform } from "class-transformer";
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateHospedagemRequestDto {
   @ApiProperty({
@@ -25,6 +26,7 @@ export class CreateHospedagemRequestDto {
     example: "(11) 99999-9999",
     description: "Telefone da hospedagem",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(20, {
@@ -115,6 +117,7 @@ export class CreateHospedagemRequestDto {
     example: "12.345.678/0001-90",
     description: "CNPJ da hospedagem",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(18, {
@@ -136,6 +139,7 @@ export class CreateHospedagemRequestDto {
   @ApiProperty({
     example: "123.456.789-00",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
   @MaxLength(14, {

@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsNotEmpty, MaxLength } from "class-validator"; // 👈 Importação necessária
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateCasaDeCambioRequestDto {
   @ApiProperty({
@@ -17,6 +18,7 @@ export class CreateCasaDeCambioRequestDto {
     example: "+55 22 99999-9999",
     description: "Telefone de contacto da casa de câmbio",
   })
+  @OnlyDigits()
   @IsString({ message: "O telefone deve ser uma string válida." })
   @IsNotEmpty({ message: "O telefone não pode estar vazio." })
   @MaxLength(20, {
