@@ -9,7 +9,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
-  @MaxLength(100, { message: "O nome deve ter no máximo 100 caracteres." })
+  @MaxLength(60, { message: "O nome deve ter no máximo 60 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -20,8 +20,8 @@ export class CreateLocalCulturalRequestDto {
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
   @NormalizeMultipartText()
-  @MaxLength(150, {
-    message: "A descrição deve ter no máximo 150 caracteres.",
+  @MaxLength(280, {
+    message: "A descrição curta deve ter no máximo 280 caracteres.",
   })
   descricao!: string;
 
