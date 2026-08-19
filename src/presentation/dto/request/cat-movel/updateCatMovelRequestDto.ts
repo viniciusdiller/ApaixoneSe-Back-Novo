@@ -1,3 +1,4 @@
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsOptional, IsString, MaxLength } from "class-validator";
 
@@ -17,8 +18,9 @@ export class UpdateCatMovelRequestDto {
   })
   @IsString()
   @IsOptional()
-  @MaxLength(2000, {
-    message: "A descrição deve ter no máximo 2000 caracteres.",
+  @NormalizeMultipartText()
+  @MaxLength(5000, {
+    message: "A descrição deve ter no máximo 5000 caracteres.",
   })
   descricao?: string;
 
@@ -51,8 +53,5 @@ export class UpdateCatMovelRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(4000, {
-    message: "A ordem enviada excedeu o tamanho máximo permitido.",
-  })
   ordem?: string;
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsDateString } from "class-validator";
+import { IsString, IsNotEmpty, IsDateString, MaxLength } from "class-validator";
 
 export class CreatePlanoViagemRequestDto {
   @ApiProperty({
@@ -8,6 +8,9 @@ export class CreatePlanoViagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80, {
+    message: "O título informado é muito longo.",
+  })
   titulo!: string;
 
   @ApiProperty({

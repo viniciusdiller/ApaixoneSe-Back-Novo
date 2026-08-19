@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
 import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateLocalCulturalRequestDto {
@@ -8,7 +9,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O nome é obrigatório." })
-  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
+  @MaxLength(60, { message: "O nome deve ter no máximo 60 caracteres." })
   nome!: string;
 
   @ApiProperty({
@@ -18,8 +19,9 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
-  @MaxLength(1000, {
-    message: "A descrição deve ter no máximo 1000 caracteres.",
+  @NormalizeMultipartText()
+  @MaxLength(280, {
+    message: "A descrição curta deve ter no máximo 280 caracteres.",
   })
   descricao!: string;
 
@@ -29,6 +31,7 @@ export class CreateLocalCulturalRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O texto é obrigatório." })
+  @NormalizeMultipartText()
   @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
   texto!: string;
 

@@ -1,5 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString, MaxLength } from "class-validator";
+import { Type } from "class-transformer";
+import { NormalizeMultipartText } from "../../decorators/normalizeMultipartText.decorator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsInt, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class UpdateTuristandoRequestDto {
   @ApiProperty({
@@ -19,6 +21,7 @@ export class UpdateTuristandoRequestDto {
   })
   @IsString()
   @IsOptional()
+  @NormalizeMultipartText()
   @MaxLength(3000, { message: "O texto deve ter no máximo 3000 caracteres." })
   texto?: string;
 
@@ -29,4 +32,10 @@ export class UpdateTuristandoRequestDto {
     required: false,
   })
   imagens?: any[];
+
+  @ApiPropertyOptional({ example: 1, description: "Ordem do bloco Turistando" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  ordem?: number;
 }

@@ -1,5 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from "class-validator";
+import { Transform } from "class-transformer";
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateHospedagemRequestDto {
   @ApiProperty({
@@ -8,14 +17,21 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120, {
+    message: "O nome informado é muito longo.",
+  })
   nome!: string;
 
   @ApiProperty({
     example: "(11) 99999-9999",
     description: "Telefone da hospedagem",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20, {
+    message: "O telefone informado é muito longo.",
+  })
   telefone!: string;
 
   @ApiProperty({
@@ -24,8 +40,33 @@ export class CreateHospedagemRequestDto {
     required: false,
     example: ["Wi-Fi", "Ar Condicionado", "Piscina"],
   })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  })
   @IsOptional()
-  tags?: any;
+  @IsArray()
+  @ArrayMaxSize(20, {
+    message: "A hospedagem possui tags demais. Remova algumas e tente novamente.",
+  })
+  @IsString({ each: true })
+  @MaxLength(40, {
+    each: true,
+    message: "Uma das tags informadas é muito longa.",
+  })
+  tags?: string[];
 
   @ApiProperty({
     example: "@pousadaVivaMar",
@@ -33,6 +74,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(60, {
+    message: "O Instagram informado é muito longo.",
+  })
   instagram?: string;
 
   @ApiProperty({
@@ -42,6 +86,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(191, {
+    message: "O site informado é muito longo.",
+  })
   site?: string;
 
   @ApiProperty({
@@ -50,6 +97,9 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(191, {
+    message: "O endereço informado é muito longo.",
+  })
   endereco!: string;
 
   @ApiProperty({
@@ -58,14 +108,21 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2000, {
+    message: "O texto diferencial informado é muito longo.",
+  })
   textoDiferencial!: string;
 
   @ApiProperty({
     example: "12.345.678/0001-90",
     description: "CNPJ da hospedagem",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(18, {
+    message: "O CNPJ informado é muito longo.",
+  })
   cnpj!: string;
 
   @ApiProperty({
@@ -74,13 +131,20 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120, {
+    message: "O nome do responsável informado é muito longo.",
+  })
   responsavelNome!: string;
 
   @ApiProperty({
     example: "123.456.789-00",
   })
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(14, {
+    message: "O CPF do responsável informado é muito longo.",
+  })
   responsavelCpf!: string;
 
   @ApiProperty({

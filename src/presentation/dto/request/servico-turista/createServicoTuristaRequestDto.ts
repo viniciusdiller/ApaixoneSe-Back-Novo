@@ -5,8 +5,10 @@ import {
   IsOptional,
   IsEnum,
   ValidateIf,
+  MaxLength,
 } from "class-validator";
 import { TipoServicoTurista, TipoRoteiro } from "@prisma/client";
+import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateServicoTuristaRequestDto {
   @ApiProperty({ enum: TipoServicoTurista })
@@ -14,16 +16,29 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty()
   tipo!: TipoServicoTurista;
 
+  @MaxLength(120, {
+    message: "O nome informado é muito longo.",
+  })
   @ApiProperty() @IsString() @IsNotEmpty() nome!: string;
+  @MaxLength(20, {
+    message: "O telefone informado é muito longo.",
+  })
+  @OnlyDigits()
   @ApiProperty() @IsString() @IsNotEmpty() telefone!: string;
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(60, {
+    message: "O Instagram informado é muito longo.",
+  })
   instagram?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(191, {
+    message: "O endereço informado é muito longo.",
+  })
   endereco?: string;
 
   @ApiProperty({
@@ -33,6 +48,9 @@ export class CreateServicoTuristaRequestDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(191, {
+    message: "O site informado é muito longo.",
+  })
   site?: string;
 
   @ApiProperty({
@@ -60,6 +78,9 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty({
     message: "A descrição é obrigatória para este tipo de serviço.",
   })
+  @MaxLength(2000, {
+    message: "A descrição informada é muito longa.",
+  })
   descricao?: string;
 
   // ==========================================
@@ -67,8 +88,12 @@ export class CreateServicoTuristaRequestDto {
   // ==========================================
   @ApiProperty({ required: false })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
+  @OnlyDigits()
   @IsString()
   @IsNotEmpty({ message: "O CNPJ é obrigatório para Guias." })
+  @MaxLength(18, {
+    message: "O CNPJ informado é muito longo.",
+  })
   cnpj?: string;
 
   @ApiProperty({ enum: TipoRoteiro, required: false })
@@ -81,6 +106,9 @@ export class CreateServicoTuristaRequestDto {
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
   @IsString()
   @IsNotEmpty({ message: "Os idiomas são obrigatórios para Guias." })
+  @MaxLength(150, {
+    message: "Os idiomas informados são muito longos.",
+  })
   idiomas?: string;
 
   // ==========================================
