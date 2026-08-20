@@ -12,6 +12,7 @@ export class EventoRepository implements IEventoRepository {
     titulo: string;
     descricao: string;
     data: Date;
+    dataFim: Date | null;
     local: string;
     endereco: string | null;
     fotoUrl: string | null;
@@ -23,6 +24,7 @@ export class EventoRepository implements IEventoRepository {
         titulo: eventoPrisma.titulo,
         descricao: eventoPrisma.descricao,
         data: eventoPrisma.data,
+        dataFim: eventoPrisma.dataFim,
         local: eventoPrisma.local,
         endereco: eventoPrisma.endereco,
         fotoUrl: eventoPrisma.fotoUrl ?? undefined,
@@ -40,6 +42,7 @@ export class EventoRepository implements IEventoRepository {
         titulo: evento.titulo,
         descricao: evento.descricao,
         data: evento.data,
+        dataFim: evento.dataFim,
         local: evento.local,
         endereco: evento.endereco,
         fotoUrl: evento.fotoUrl,
@@ -74,6 +77,7 @@ export class EventoRepository implements IEventoRepository {
         titulo: data.titulo,
         descricao: data.descricao,
         data: data.data,
+        dataFim: data.dataFim,
         local: data.local,
         endereco: data.endereco,
         fotoUrl: data.fotoUrl,
