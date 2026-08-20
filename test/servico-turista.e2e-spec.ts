@@ -122,7 +122,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("telefone", "999999999")
       .field("tipo", "GUIA_TURISMO")
       .field("cnpj", "00.000.000/0001-00")
-      .field("roteiro", "CULTURAL")
+      .field("roteiros", JSON.stringify(["CULTURAL"]))
       .field("idiomas", "Português")
       .expect(400);
   });
@@ -139,7 +139,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(400);
   });
 
-  it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante (201)", async () => {
+  it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante, mas exige modalidades e documento do CNPJ (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -147,7 +147,9 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("telefone", "999000000")
       .field("tipo", "ESPORTE_LAZER")
       .field("descricao", "Atividades esportivas e lazer na região")
+      .field("modalidades", JSON.stringify(["AQUATICO", "TERRESTRE"]))
       .attach("logo", bufferImagem, "logo.png")
+      .attach("documentoCnpj", bufferImagem, "documento_cnpj.png")
       .expect(201);
 
     const idTemp = resposta.body.id;
@@ -156,6 +158,32 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
         .delete(`/servico-turista/${idTemp}`)
         .set("Authorization", `Bearer ${tokenAdmin}`);
     }
+  });
+
+  it("5b. POST /servico-turista - ESPORTE_LAZER sem documento do CNPJ deve falhar (400)", () => {
+    return request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("nome", `EsporteSemCnpjE2E${Date.now()}`)
+      .field("telefone", "999000001")
+      .field("tipo", "ESPORTE_LAZER")
+      .field("descricao", "Atividades esportivas e lazer na região")
+      .field("modalidades", JSON.stringify(["AEREO"]))
+      .attach("logo", bufferImagem, "logo.png")
+      .expect(400);
+  });
+
+  it("5c. POST /servico-turista - ESPORTE_LAZER sem modalidades deve falhar (400)", () => {
+    return request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("nome", `EsporteSemModalidadeE2E${Date.now()}`)
+      .field("telefone", "999000002")
+      .field("tipo", "ESPORTE_LAZER")
+      .field("descricao", "Atividades esportivas e lazer na região")
+      .attach("logo", bufferImagem, "logo.png")
+      .attach("documentoCnpj", bufferImagem, "documento_cnpj.png")
+      .expect(400);
   });
 
   it("6. POST /servico-turista - Dono cria Agência com sucesso (201)", async () => {
