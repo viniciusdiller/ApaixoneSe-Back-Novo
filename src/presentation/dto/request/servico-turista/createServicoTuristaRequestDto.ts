@@ -103,11 +103,36 @@ export class CreateServicoTuristaRequestDto {
   })
   cnpj?: string;
 
-  @ApiProperty({ enum: TipoRoteiro, required: false })
+  @ApiProperty({
+    enum: TipoRoteiro,
+    isArray: true,
+    required: false,
+    description: "Obrigatório para Guias (pelo menos um roteiro)",
+    example: ["DE_PRAIAS", "ECOLOGICO"],
+  })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
-  @IsEnum(TipoRoteiro)
-  @IsNotEmpty({ message: "O roteiro especializado é obrigatório para Guias." })
-  roteiro?: TipoRoteiro;
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  })
+  @IsArray()
+  @ArrayMinSize(1, {
+    message: "Selecione ao menos um roteiro especializado.",
+  })
+  @IsEnum(TipoRoteiro, { each: true })
+  roteiros?: TipoRoteiro[];
 
   @ApiProperty({ required: false, example: "Português, Inglês" })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
