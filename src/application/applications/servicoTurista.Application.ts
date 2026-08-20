@@ -24,12 +24,14 @@ export class ServicoTuristaApplication {
     logoUrl?: string,
     fotoUrl?: string,
     comprovanteUrl?: string,
+    documentoCnpjUrl?: string,
   ) {
     const dadosCriacao: any = { ...data };
 
     delete dadosCriacao.logo;
     delete dadosCriacao.foto;
     delete dadosCriacao.comprovante;
+    delete dadosCriacao.documentoCnpj;
 
     if (dadosCriacao.validade) {
       dadosCriacao.validade = new Date(dadosCriacao.validade);
@@ -41,6 +43,7 @@ export class ServicoTuristaApplication {
       logoUrl,
       fotoUrl,
       comprovanteUrl,
+      documentoCnpjUrl,
     });
 
     return this.repo.save(novo);
@@ -63,6 +66,7 @@ export class ServicoTuristaApplication {
     logoUrl?: string,
     fotoUrl?: string,
     comprovanteUrl?: string,
+    documentoCnpjUrl?: string,
   ) {
     const existente = await this.repo.findById(id);
     if (!existente) throw new NotFoundException("Serviço não encontrado.");
@@ -114,6 +118,7 @@ export class ServicoTuristaApplication {
     delete dadosAtualizacao.logo;
     delete dadosAtualizacao.foto;
     delete dadosAtualizacao.comprovante;
+    delete dadosAtualizacao.documentoCnpj;
     if (dadosAtualizacao.validade && usuarioLogado.perfil !== "ADMIN") {
       delete dadosAtualizacao.validade;
     }
@@ -125,6 +130,7 @@ export class ServicoTuristaApplication {
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (fotoUrl) dadosAtualizacao.fotoUrl = fotoUrl;
     if (comprovanteUrl) dadosAtualizacao.comprovanteUrl = comprovanteUrl;
+    if (documentoCnpjUrl) dadosAtualizacao.documentoCnpjUrl = documentoCnpjUrl;
 
     return this.repo.update(id, dadosAtualizacao);
   }
