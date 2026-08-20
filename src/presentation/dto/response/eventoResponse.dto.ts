@@ -11,8 +11,20 @@ export class EventoResponseDto {
   @ApiProperty({ example: "O maior evento country..." })
   descricao!: string;
 
-  @ApiProperty({ example: "2026-04-01T20:00:00.000Z" })
+  @ApiProperty({
+    example: "2026-04-01T20:00:00.000Z",
+    description: "Data e hora de início do evento",
+  })
   data!: Date;
+
+  @ApiProperty({
+    example: "2026-04-03T23:00:00.000Z",
+    description:
+      "Data e hora de término do evento. Nulo quando o evento é de um único dia.",
+    required: false,
+    nullable: true,
+  })
+  dataFim?: Date | null;
 
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   local!: string;

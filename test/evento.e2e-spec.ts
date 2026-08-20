@@ -15,6 +15,12 @@ describe("Eventos - Apenas Admin (e2e)", () => {
   let tokenAdmin: string;
   let eventoCriadoId: string;
 
+  // Buffer de imagem PNG 1x1 válida para o sharp conseguir processar
+  const bufferImagem = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+    "base64",
+  );
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -74,12 +80,11 @@ describe("Eventos - Apenas Admin (e2e)", () => {
     return request(app.getHttpServer())
       .post("/eventos")
       .set("Authorization", `Bearer ${tokenComum}`)
-      .send({
-        titulo: "Festa Fake",
-        descricao: "Teste",
-        data: new Date().toISOString(),
-        local: "Praça",
-      })
+      .field("titulo", "Festa Fake")
+      .field("descricao", "Teste")
+      .field("data", new Date().toISOString())
+      .field("local", "Praça")
+      .attach("foto", bufferImagem, "foto.png")
       .expect(403);
   });
 
@@ -87,12 +92,11 @@ describe("Eventos - Apenas Admin (e2e)", () => {
     return request(app.getHttpServer())
       .post("/eventos")
       .set("Authorization", `Bearer ${tokenParceiro}`)
-      .send({
-        titulo: "Evento do Parceiro",
-        descricao: "Tentativa indevida",
-        data: new Date().toISOString(),
-        local: "Praça",
-      })
+      .field("titulo", "Evento do Parceiro")
+      .field("descricao", "Tentativa indevida")
+      .field("data", new Date().toISOString())
+      .field("local", "Praça")
+      .attach("foto", bufferImagem, "foto.png")
       .expect(403);
   });
 
@@ -100,32 +104,71 @@ describe("Eventos - Apenas Admin (e2e)", () => {
     const resposta = await request(app.getHttpServer())
       .post("/eventos")
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .send({
-        titulo: "Saquarema Surf Festival",
-        descricao: "Maior campeonato!",
-        data: new Date().toISOString(),
-        local: "Praia de Itaúna",
-      })
+      .field("titulo", "Saquarema Surf Festival")
+      .field("descricao", "Maior campeonato!")
+      .field("data", new Date().toISOString())
+      .field("local", "Praia de Itaúna")
+      .attach("foto", bufferImagem, "foto.png")
       .expect(201);
 
     eventoCriadoId = resposta.body.id;
+    expect(resposta.body.dataFim).toBeNull();
   });
 
-  it("5. DELETE /eventos/:id - Utilizador Comum TENTA apagar (403)", () => {
+  it("5. POST /eventos - Admin cria evento em período (dataFim opcional) (201)", async () => {
+    const dataInicio = new Date();
+    const dataFim = new Date(dataInicio.getTime() + 2 * 24 * 60 * 60 * 1000);
+
+    const resposta = await request(app.getHttpServer())
+      .post("/eventos")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .field("titulo", "Saquarema Country Fest")
+      .field("descricao", "Três dias de shows.")
+      .field("data", dataInicio.toISOString())
+      .field("dataFim", dataFim.toISOString())
+      .field("local", "Parque de Exposições")
+      .attach("foto", bufferImagem, "foto.png")
+      .expect(201);
+
+    expect(new Date(resposta.body.dataFim)).toEqual(dataFim);
+
+    await request(app.getHttpServer())
+      .delete(`/eventos/${resposta.body.id}`)
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .expect(204);
+  });
+
+  it("6. POST /eventos - dataFim anterior à data de início é rejeitada (400)", () => {
+    const dataInicio = new Date();
+    const dataFim = new Date(dataInicio.getTime() - 24 * 60 * 60 * 1000);
+
+    return request(app.getHttpServer())
+      .post("/eventos")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .field("titulo", "Evento com período inválido")
+      .field("descricao", "Não deve ser criado.")
+      .field("data", dataInicio.toISOString())
+      .field("dataFim", dataFim.toISOString())
+      .field("local", "Praça")
+      .attach("foto", bufferImagem, "foto.png")
+      .expect(400);
+  });
+
+  it("7. DELETE /eventos/:id - Utilizador Comum TENTA apagar (403)", () => {
     return request(app.getHttpServer())
       .delete(`/eventos/${eventoCriadoId}`)
       .set("Authorization", `Bearer ${tokenComum}`)
       .expect(403);
   });
 
-  it("6. DELETE /eventos/:id - PARCEIRO TENTA apagar (403)", () => {
+  it("8. DELETE /eventos/:id - PARCEIRO TENTA apagar (403)", () => {
     return request(app.getHttpServer())
       .delete(`/eventos/${eventoCriadoId}`)
       .set("Authorization", `Bearer ${tokenParceiro}`)
       .expect(403);
   });
 
-  it("7. DELETE /eventos/:id - Admin apaga o evento (204)", () => {
+  it("9. DELETE /eventos/:id - Admin apaga o evento (204)", () => {
     return request(app.getHttpServer())
       .delete(`/eventos/${eventoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)

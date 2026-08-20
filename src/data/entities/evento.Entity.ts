@@ -3,6 +3,7 @@ export class Evento {
   public titulo: string;
   public descricao: string;
   public data: Date;
+  public dataFim?: Date | null;
   public local: string;
   public endereco?: string | null;
   public fotoUrl?: string;
@@ -18,6 +19,7 @@ export class Evento {
     this.titulo = props.titulo;
     this.descricao = props.descricao;
     this.data = props.data;
+    this.dataFim = props.dataFim;
     this.local = props.local;
     this.endereco = props.endereco;
     this.fotoUrl = props.fotoUrl;
@@ -36,5 +38,16 @@ export class Evento {
     if (!this.descricao || this.descricao.trim() === "")
       throw new Error("A descrição do evento é obrigatória.");
     if (!this.data) throw new Error("A data do evento é obrigatória.");
+    if (isNaN(this.data.getTime()))
+      throw new Error("A data do evento é inválida.");
+
+    if (this.dataFim != null) {
+      if (isNaN(this.dataFim.getTime()))
+        throw new Error("A data final do evento é inválida.");
+      if (this.dataFim.getTime() < this.data.getTime())
+        throw new Error(
+          "A data final do evento não pode ser anterior à data de início.",
+        );
+    }
   }
 }

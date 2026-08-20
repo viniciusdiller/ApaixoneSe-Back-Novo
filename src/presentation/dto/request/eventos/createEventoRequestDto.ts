@@ -32,11 +32,20 @@ export class CreateEventoRequestDto {
 
   @ApiProperty({
     example: "2026-04-01T20:00:00Z",
-    description: "Data e hora no formato ISO8601",
+    description: "Data e hora de início do evento, no formato ISO8601",
   })
-  @IsDateString({}, { message: "Forneça uma data válida" })
+  @IsDateString({}, { message: "Forneça uma data de início válida" })
   @IsNotEmpty({ message: "A data é obrigatória" })
   data!: string;
+
+  @ApiPropertyOptional({
+    example: "2026-04-03T23:00:00Z",
+    description:
+      "Data e hora de término do evento, no formato ISO8601. Omita para um evento de um único dia.",
+  })
+  @IsOptional()
+  @IsDateString({}, { message: "Forneça uma data final válida" })
+  dataFim?: string;
 
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   @IsString()
