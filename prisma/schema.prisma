@@ -126,6 +126,7 @@ model Eventos {
   titulo      String
   descricao   String      @db.Text
   data        DateTime
+  dataFim     DateTime?
   local       String
   endereco    String?
   fotoUrl     String?
