@@ -249,7 +249,7 @@ model ServicoTurista {
   descricao        String?            @db.Text
   endereco         String?
   cnpj             String?
-  roteiro          TipoRoteiro?
+  roteiros         Json?
   idiomas          String?
   modalidades      Json?
   comprovanteUrl   String?
