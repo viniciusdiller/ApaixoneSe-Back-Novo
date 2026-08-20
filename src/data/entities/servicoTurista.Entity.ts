@@ -1,8 +1,4 @@
-import {
-  TipoServicoTurista,
-  TipoRoteiro,
-  StatusEstabelecimento,
-} from "@prisma/client";
+import { TipoServicoTurista, StatusEstabelecimento } from "@prisma/client";
 
 export class ServicoTurista {
   id?: string;
@@ -15,7 +11,7 @@ export class ServicoTurista {
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;
-  roteiro?: TipoRoteiro | null;
+  roteiros?: string[] | any;
   idiomas?: string | null;
   modalidades?: string[] | any;
   comprovanteUrl?: string | null;
