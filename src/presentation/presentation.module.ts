@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { ApplicationModule } from "../application/application.module";
 import { UserController } from "./controllers/user.controller";
 import { GastronomiaController } from "./controllers/gastronomia.controller";
@@ -17,9 +18,13 @@ import { SecretariaTurismoController } from "./controllers/secretariaTurismo.con
 import { FiquePorDentroController } from "./controllers/fiquePorDentro.controller";
 import { PontoAguaController } from "./controllers/pontoAgua.controller";
 import { LocalCulturalController } from "./controllers/localCultural.controller";
+import { ClicksController } from "./controllers/clicks.controller";
 
 @Module({
-  imports: [ApplicationModule],
+  imports: [
+    ApplicationModule,
+    ThrottlerModule.forRoot([{ name: "clicks", ttl: 60000, limit: 30 }]),
+  ],
   controllers: [
     UserController,
     GastronomiaController,
@@ -38,6 +43,7 @@ import { LocalCulturalController } from "./controllers/localCultural.controller"
     FiquePorDentroController,
     PontoAguaController,
     LocalCulturalController,
+    ClicksController,
   ],
 })
 export class PresentationModule {}
