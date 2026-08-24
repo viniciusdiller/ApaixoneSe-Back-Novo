@@ -472,3 +472,17 @@ model LocalCultural {
 
   @@map("locais_culturais")
 }
+
+// =========================================
+// ANALYTICS - Contador de cliques agregado por dia
+// =========================================
+model ClickCounter {
+  id        String   @id @default(uuid())
+  categoria String
+  pagina    String
+  data      DateTime @db.Date
+  total     Int      @default(0)
+
+  @@unique([categoria, pagina, data])
+  @@map("click_counters")
+}
