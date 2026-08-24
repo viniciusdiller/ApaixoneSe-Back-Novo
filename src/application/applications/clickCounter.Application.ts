@@ -6,6 +6,7 @@ import { EventoRepository } from "../../data/repositories/evento.repository";
 import { ServicoTuristaRepository } from "../../data/repositories/servicoTurista.repository";
 import { CasaDeCambioRepository } from "../../data/repositories/casaDeCambio.repository";
 import { PontoAguaRepository } from "../../data/repositories/pontoAgua.repository";
+import { AtividadeRepository } from "../../data/repositories/atividade.repository";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import { IClickStatsResultado } from "../../data/interfaces/iClickCounterRepository.Interface";
 import { ClickStatsQueryDto } from "../../presentation/dto/request/clicks/clickStatsQueryDto";
@@ -39,6 +40,24 @@ const ROTEIRO_SLUG_LABELS: Record<string, string> = {
   ecologico: "Roteiro Ecológico",
 };
 
+// Enum TipoRoteiro (Prisma) -> slug do roteiro no front. Usado só pra
+// resolver o "pai" de uma atividade (categoria=atividades) pro slug do
+// roteiro em que ela aparece.
+const ROTEIRO_ENUM_TO_SLUG: Record<string, string> = {
+  A_PE: "a-pe",
+  ESPORTE_E_AVENTURA: "esporte-e-aventura",
+  DE_PRAIAS: "de-praias",
+  CULTURAL: "cultural",
+  RELIGIOSO: "religioso",
+  RURAL: "rural",
+  ECOLOGICO: "ecologico",
+};
+
+interface DetalhesPagina {
+  label: string;
+  pai?: string;
+}
+
 function inicioDoDiaUtc(referencia: Date = new Date()): Date {
   return new Date(
     Date.UTC(
@@ -59,6 +78,7 @@ export class ClickCounterApplication {
     private readonly servicoTuristaRepository: ServicoTuristaRepository,
     private readonly casaDeCambioRepository: CasaDeCambioRepository,
     private readonly pontoAguaRepository: PontoAguaRepository,
+    private readonly atividadeRepository: AtividadeRepository,
   ) {}
 
   async registrar(categoria: string, pagina: string): Promise<void> {
@@ -114,56 +134,73 @@ export class ClickCounterApplication {
     itens: IClickStatsResultado[],
   ): Promise<ClickStatsResponseDto[]> {
     return Promise.all(
-      itens.map(async (item) => ({
-        ...item,
-        paginaLabel: await this.resolverLabel(item.categoria, item.pagina),
-      })),
+      itens.map(async (item) => {
+        const { label, pai } = await this.resolverDetalhes(
+          item.categoria,
+          item.pagina,
+        );
+        return { ...item, paginaLabel: label, paginaPai: pai };
+      }),
     );
   }
 
-  private async resolverLabel(
+  private async resolverDetalhes(
     categoria: string,
     pagina: string,
-  ): Promise<string> {
+  ): Promise<DetalhesPagina> {
     switch (categoria) {
       case "gastronomia":
-        return (
-          (await this.gastronomiaRepository.findById(pagina))?.nome ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.gastronomiaRepository.findById(pagina))?.nome ??
+            ITEM_REMOVIDO,
+        };
       case "hospedagens":
-        return (
-          (await this.hospedagemRepository.findById(pagina))?.nome ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.hospedagemRepository.findById(pagina))?.nome ??
+            ITEM_REMOVIDO,
+        };
       case "eventos":
-        return (
-          (await this.eventoRepository.findById(pagina))?.titulo ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.eventoRepository.findById(pagina))?.titulo ??
+            ITEM_REMOVIDO,
+        };
       case "agencias":
       case "esportes":
       case "guias":
       case "locadoras":
-        return (
-          (await this.servicoTuristaRepository.findById(pagina))?.nome ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.servicoTuristaRepository.findById(pagina))?.nome ??
+            ITEM_REMOVIDO,
+        };
       case "casa-de-cambio":
-        return (
-          (await this.casaDeCambioRepository.findById(pagina))?.nome ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.casaDeCambioRepository.findById(pagina))?.nome ??
+            ITEM_REMOVIDO,
+        };
       case "praias":
       case "lagoas":
-        return (
-          (await this.pontoAguaRepository.findBySlug(pagina))?.nome ??
-          ITEM_REMOVIDO
-        );
+        return {
+          label:
+            (await this.pontoAguaRepository.findBySlug(pagina))?.nome ??
+            ITEM_REMOVIDO,
+        };
       case "roteiros":
-        return ROTEIRO_SLUG_LABELS[pagina] ?? pagina;
+        return { label: ROTEIRO_SLUG_LABELS[pagina] ?? pagina };
+      case "atividades": {
+        const atividade = await this.atividadeRepository.findById(pagina);
+        if (!atividade) return { label: ITEM_REMOVIDO };
+        return {
+          label: atividade.titulo,
+          pai: ROTEIRO_ENUM_TO_SLUG[atividade.roteiro],
+        };
+      }
       default:
-        return PAGINA_FIXA_LABELS[pagina] ?? pagina;
+        return { label: PAGINA_FIXA_LABELS[pagina] ?? pagina };
     }
   }
 }

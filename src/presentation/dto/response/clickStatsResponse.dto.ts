@@ -15,6 +15,13 @@ export class ClickStatsResponseDto {
   @ApiProperty({ example: "Restaurante do Vineco" })
   paginaLabel!: string;
 
+  /**
+   * Slug do "pai" quando o item pertence a outro (hoje só atividades, cujo
+   * pai é o slug do roteiro). Ausente pras demais categorias.
+   */
+  @ApiProperty({ example: "a-pe", required: false })
+  paginaPai?: string;
+
   @ApiProperty({ example: 42 })
   total!: number;
 }

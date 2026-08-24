@@ -1,8 +1,11 @@
 // Categorias com item identificado por slug (têm campo `slug` no Prisma e rota `[slug]` no front)
 export const CATEGORIAS_CLICKS_SLUG = ["praias", "lagoas", "roteiros"] as const;
 
-// Categorias com item identificado por id (uuid) - listas reais de itens, sem
-// rota própria no front (clique disparado no card/modal "Ver detalhes")
+// Categorias com item identificado por id (uuid) - listas reais de itens.
+// A maioria não tem rota própria (clique disparado no card/modal "Ver
+// detalhes"); "atividades" é exceção - tem rota própria
+// (/roteiros/[slug]/atividades/[id]) mas o model Atividade não tem slug,
+// só id, então segue o mesmo formato uuid das demais.
 export const CATEGORIAS_CLICKS_UUID = [
   "gastronomia",
   "hospedagens",
@@ -12,6 +15,7 @@ export const CATEGORIAS_CLICKS_UUID = [
   "esportes",
   "guias",
   "locadoras",
+  "atividades",
 ] as const;
 
 // Categorias de página única/institucional - não são listas de item, são

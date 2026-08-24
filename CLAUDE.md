@@ -72,9 +72,11 @@ estabelecimento, feature completamente separada).
   - `CATEGORIAS_CLICKS_SLUG` (`praias`, `lagoas`, `roteiros`) — `pagina` é o
     `slug` do item.
   - `CATEGORIAS_CLICKS_UUID` (`gastronomia`, `hospedagens`, `eventos`,
-    `agencias`, `casa-de-cambio`, `esportes`, `guias`, `locadoras`) — listas
-    reais de item, sem rota própria; `pagina` é o `id` (uuid) do item,
-    clique disparado no card/modal "Ver detalhes".
+    `agencias`, `casa-de-cambio`, `esportes`, `guias`, `locadoras`,
+    `atividades`) — listas reais de item; `pagina` é o `id` (uuid) do item,
+    clique disparado no card/modal "Ver detalhes" (a maioria) ou no mount da
+    página de detalhe (`atividades`, que tem rota própria mas o model não
+    tem slug).
   - `CATEGORIAS_CLICKS_PAGINA_FIXA` (`cat`, `secretaria-de-turismo`,
     `taxa-de-turismo`, `institucional`) — **não** são listas de item (CAT e
     Secretaria têm só 1 registro cada; taxa-de-turismo é conteúdo 100%
@@ -99,7 +101,10 @@ estabelecimento, feature completamente separada).
   `perfil === 'ADMIN'` dentro de `ClickCounterApplication#stats` (não no
   controller — ver convenção acima).
 - Query opcional: `{ categoria?, pagina?, dataInicio?, dataFim?, page?, limit? }`
-  (datas em `YYYY-MM-DD`; `page` padrão 1, `limit` padrão 10, máx 100).
+  (datas em `YYYY-MM-DD`; `page` padrão 1, `limit` padrão 10, máx 500 — o
+  admin usa `limit=500` sem `categoria` pra trazer tudo de uma vez e montar
+  a hierarquia Grupo→Categoria→Item no client, sem paginação de verdade
+  nessa tela).
 - Resposta paginada:
   ```json
   {
@@ -113,11 +118,21 @@ estabelecimento, feature completamente separada).
   `paginaLabel` é o nome real resolvido a partir de `pagina` — **nunca exiba o
   campo `pagina` bruto no admin quando a categoria for do grupo uuid**, use
   sempre `paginaLabel` (fallback `"Item removido"` se o registro original foi
-  apagado). Resolução em `ClickCounterApplication#resolverLabel`: consulta a
-  tabela certa por categoria (`GastronomiaRepository`, `HospedagemRepository`,
+  apagado). Resolução em `ClickCounterApplication#resolverDetalhes`: consulta
+  a tabela certa por categoria (`GastronomiaRepository`, `HospedagemRepository`,
   `EventoRepository`, `ServicoTuristaRepository`, `CasaDeCambioRepository`,
-  `PontoAguaRepository.findBySlug` pra praias/lagoas), mapas estáticos pra
-  roteiros (7 fixos, sem tabela própria) e páginas fixas/institucionais.
+  `PontoAguaRepository.findBySlug` pra praias/lagoas, `AtividadeRepository`
+  pra atividades), mapas estáticos pra roteiros (7 fixos, sem tabela própria)
+  e páginas fixas/institucionais.
+
+  `paginaPai` (opcional) identifica um item "filho" de outro — hoje só a
+  categoria `atividades`: cada atividade pertence a um roteiro
+  (`Atividade.roteiro`, enum `TipoRoteiro`), resolvido pro **slug** do
+  roteiro via `ROTEIRO_ENUM_TO_SLUG` (mesmos 7 fixos de
+  `ROTEIRO_SLUG_LABELS`, invertido). O admin usa isso pra aninhar as
+  atividades sob o roteiro-pai na seção "Roteiros" em vez de listar tudo
+  solto. Ausente pras demais categorias.
+
   `resumo.totalCliques`/`totalCombinacoes` são sobre o **resultado filtrado
   completo**, não só a página atual — só `items` é fatiado pela paginação.
   Cardinalidade (categoria×página) é agregada e paginada em memória (não é
