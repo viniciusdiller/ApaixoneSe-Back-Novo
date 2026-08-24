@@ -67,13 +67,24 @@ estabelecimento, feature completamente separada).
 
 - **Sem** `JwtAuthGuard` (clique de visitante anônimo).
 - Body: `{ categoria: string, pagina: string }`. `categoria` validada contra
-  whitelist fixa (`src/presentation/dto/constants/categoriasClicks.constant.ts`,
-  15 valores — as 7 categorias de negócio, os 8 sub-tipos de `servicos/*`, e
-  `institucional` pra páginas estáticas como `faq`). `pagina` validada por
-  formato condicionado à categoria (uuid, slug, ou valor fixo — ver o mesmo
-  arquivo de constantes e `paginaValidaParaCategoria.decorator.ts`).
-  **Nunca** aceita `total`/`data`/`id` do client — a data do bucket é sempre
-  `new Date()` do servidor.
+  whitelist fixa (`src/presentation/dto/constants/categoriasClicks.constant.ts`),
+  dividida em 3 grupos com formato de `pagina` diferente cada:
+  - `CATEGORIAS_CLICKS_SLUG` (`praias`, `lagoas`, `roteiros`) — `pagina` é o
+    `slug` do item.
+  - `CATEGORIAS_CLICKS_UUID` (`gastronomia`, `hospedagens`, `eventos`,
+    `agencias`, `casa-de-cambio`, `esportes`, `guias`, `locadoras`) — listas
+    reais de item, sem rota própria; `pagina` é o `id` (uuid) do item,
+    clique disparado no card/modal "Ver detalhes".
+  - `CATEGORIAS_CLICKS_PAGINA_FIXA` (`cat`, `secretaria-de-turismo`,
+    `taxa-de-turismo`, `institucional`) — **não** são listas de item (CAT e
+    Secretaria têm só 1 registro cada; taxa-de-turismo é conteúdo 100%
+    estático), então `pagina` é sempre um valor fixo: igual à própria
+    categoria, exceto `institucional` onde `pagina` identifica qual página
+    estática (whitelist própria, hoje só `faq`).
+
+  `pagina` validada por esse formato condicionado à categoria via
+  `paginaValidaParaCategoria.decorator.ts`. **Nunca** aceita `total`/`data`/`id`
+  do client — a data do bucket é sempre `new Date()` do servidor.
 - Resposta: `204 No Content`.
 - **Rate limit: 30 req/min por IP**, aplicado só nessa rota via
   `ClicksThrottlerGuard` (`src/presentation/guards/clicksThrottler.guard.ts`)

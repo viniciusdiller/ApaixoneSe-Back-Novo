@@ -8,6 +8,7 @@ import {
 import {
   CATEGORIAS_CLICKS_SLUG,
   CATEGORIAS_CLICKS_UUID,
+  CATEGORIAS_CLICKS_PAGINA_FIXA,
   PAGINAS_INSTITUCIONAL_WHITELIST,
 } from "../constants/categoriasClicks.constant";
 
@@ -37,6 +38,14 @@ class PaginaValidaParaCategoriaConstraint
       return (PAGINAS_INSTITUCIONAL_WHITELIST as readonly string[]).includes(
         pagina,
       );
+    }
+
+    if (
+      (CATEGORIAS_CLICKS_PAGINA_FIXA as readonly string[]).includes(categoria)
+    ) {
+      // cat, secretaria-de-turismo, taxa-de-turismo: página única, não é
+      // uma lista de itens - pagina é sempre igual à própria categoria.
+      return pagina === categoria;
     }
 
     return false;
