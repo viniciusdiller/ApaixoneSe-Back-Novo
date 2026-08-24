@@ -80,7 +80,7 @@ estabelecimento, feature completamente separada).
     Secretaria têm só 1 registro cada; taxa-de-turismo é conteúdo 100%
     estático), então `pagina` é sempre um valor fixo: igual à própria
     categoria, exceto `institucional` onde `pagina` identifica qual página
-    estática (whitelist própria, hoje só `faq`).
+    estática (whitelist própria: `faq`, `home`).
 
   `pagina` validada por esse formato condicionado à categoria via
   `paginaValidaParaCategoria.decorator.ts`. **Nunca** aceita `total`/`data`/`id`

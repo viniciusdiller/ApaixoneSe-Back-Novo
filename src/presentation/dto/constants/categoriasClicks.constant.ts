@@ -26,7 +26,7 @@ export const CATEGORIAS_CLICKS_PAGINA_FIXA = [
 
 // Para "institucional" o valor de pagina identifica QUAL página estática;
 // para as demais categorias de página fixa, pagina == a própria categoria.
-export const PAGINAS_INSTITUCIONAL_WHITELIST = ["faq"] as const;
+export const PAGINAS_INSTITUCIONAL_WHITELIST = ["faq", "home"] as const;
 
 export const CATEGORIAS_CLICKS_WHITELIST = [
   ...CATEGORIAS_CLICKS_SLUG,
