@@ -18,6 +18,7 @@ import { FiquePorDentroRepository } from "./repositories/fiquePorDentro.reposito
 import { AuthTokenRepository } from "./repositories/authToken.repository";
 import { PontoAguaRepository } from "./repositories/pontoAgua.repository";
 import { LocalCulturalRepository } from "./repositories/localCultural.repository";
+import { ClickCounterRepository } from "./repositories/clickCounter.repository";
 
 const repositories = [
   PrismaService,
@@ -39,6 +40,7 @@ const repositories = [
   AuthTokenRepository,
   PontoAguaRepository,
   LocalCulturalRepository,
+  ClickCounterRepository,
 ];
 
 @Module({
