@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsIn, IsOptional } from "class-validator";
+import { Type } from "class-transformer";
+import { IsDateString, IsIn, IsInt, IsOptional, Max, Min } from "class-validator";
 import { CATEGORIAS_CLICKS_WHITELIST } from "../../constants/categoriasClicks.constant";
 
 export class ClickStatsQueryDto {
@@ -21,4 +22,19 @@ export class ClickStatsQueryDto {
   @IsOptional()
   @IsDateString()
   dataFim?: string;
+
+  @ApiProperty({ required: false, default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiProperty({ required: false, default: 10, minimum: 1, maximum: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }

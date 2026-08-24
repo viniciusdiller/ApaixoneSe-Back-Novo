@@ -45,7 +45,7 @@ export class ClickCounterRepository implements IClickCounterRepository {
         },
       },
       _sum: { total: true },
-      orderBy: { categoria: "asc" },
+      orderBy: { _sum: { total: "desc" } },
     });
 
     return resultado.map((r) => ({

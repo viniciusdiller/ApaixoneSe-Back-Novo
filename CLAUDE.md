@@ -98,11 +98,31 @@ estabelecimento, feature completamente separada).
 - `@UseGuards(JwtAuthGuard)` + `Authorization: Bearer <jwt>`; checagem
   `perfil === 'ADMIN'` dentro de `ClickCounterApplication#stats` (não no
   controller — ver convenção acima).
-- Query opcional: `{ categoria?, pagina?, dataInicio?, dataFim? }` (datas em
-  `YYYY-MM-DD`).
-- Resposta: `200` com `[{ categoria: string, pagina: string, total: number }]`
-  — agregado (soma) no intervalo de datas informado, agrupado por
-  categoria+página.
+- Query opcional: `{ categoria?, pagina?, dataInicio?, dataFim?, page?, limit? }`
+  (datas em `YYYY-MM-DD`; `page` padrão 1, `limit` padrão 10, máx 100).
+- Resposta paginada:
+  ```json
+  {
+    "items": [{ "categoria": "gastronomia", "pagina": "<uuid>", "paginaLabel": "Restaurante do Vineco", "total": 42 }],
+    "page": 1,
+    "limit": 10,
+    "totalPaginas": 4,
+    "resumo": { "totalCliques": 512, "totalCombinacoes": 37, "topItem": { ... } }
+  }
+  ```
+  `paginaLabel` é o nome real resolvido a partir de `pagina` — **nunca exiba o
+  campo `pagina` bruto no admin quando a categoria for do grupo uuid**, use
+  sempre `paginaLabel` (fallback `"Item removido"` se o registro original foi
+  apagado). Resolução em `ClickCounterApplication#resolverLabel`: consulta a
+  tabela certa por categoria (`GastronomiaRepository`, `HospedagemRepository`,
+  `EventoRepository`, `ServicoTuristaRepository`, `CasaDeCambioRepository`,
+  `PontoAguaRepository.findBySlug` pra praias/lagoas), mapas estáticos pra
+  roteiros (7 fixos, sem tabela própria) e páginas fixas/institucionais.
+  `resumo.totalCliques`/`totalCombinacoes` são sobre o **resultado filtrado
+  completo**, não só a página atual — só `items` é fatiado pela paginação.
+  Cardinalidade (categoria×página) é agregada e paginada em memória (não é
+  `LIMIT/OFFSET` no SQL) — proporcional pro volume de um site institucional;
+  revisitar com SQL raw se a base de dados crescer muito.
 - `401` sem token, `403` se `perfil !== 'ADMIN'`.
 
 ## Scripts úteis

@@ -16,7 +16,7 @@ import { ClicksThrottlerGuard } from "../guards/clicksThrottler.guard";
 import { ClickCounterApplication } from "../../application/applications/clickCounter.Application";
 import { RegistrarClickRequestDto } from "../dto/request/clicks/registrarClickRequestDto";
 import { ClickStatsQueryDto } from "../dto/request/clicks/clickStatsQueryDto";
-import { ClickStatsResponseDto } from "../dto/response/clickStatsResponse.dto";
+import { ClickStatsPaginatedResponseDto } from "../dto/response/clickStatsResponse.dto";
 
 @ApiTags("Clicks (Analytics)")
 @Controller("clicks")
@@ -39,12 +39,12 @@ export class ClicksController {
   @Get("stats")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Consulta agregados de cliques (apenas ADMIN)" })
-  @ApiResponse({ status: 200, type: [ClickStatsResponseDto] })
+  @ApiOperation({ summary: "Consulta agregados de cliques, paginado (apenas ADMIN)" })
+  @ApiResponse({ status: 200, type: ClickStatsPaginatedResponseDto })
   async stats(
     @Req() req: any,
     @Query() query: ClickStatsQueryDto,
-  ): Promise<ClickStatsResponseDto[]> {
+  ): Promise<ClickStatsPaginatedResponseDto> {
     return this.app.stats(req.user, query);
   }
 }
