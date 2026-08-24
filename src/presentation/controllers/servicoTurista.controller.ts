@@ -64,6 +64,7 @@ export class ServicoTuristaController {
         { name: "logo", maxCount: 1 },
         { name: "foto", maxCount: 1 },
         { name: "comprovante", maxCount: 1 },
+        { name: "documentoCnpj", maxCount: 1 },
       ],
       { storage: memoryStorage() },
     ),
@@ -76,11 +77,13 @@ export class ServicoTuristaController {
       logo?: Express.Multer.File[];
       foto?: Express.Multer.File[];
       comprovante?: Express.Multer.File[];
+      documentoCnpj?: Express.Multer.File[];
     },
   ) {
     const logoFile = files?.logo?.[0];
     const fotoFile = files?.foto?.[0];
     const comprovanteFile = files?.comprovante?.[0];
+    const documentoCnpjFile = files?.documentoCnpj?.[0];
 
     if (dto.tipo === TipoServicoTurista.GUIA_TURISMO && !fotoFile) {
       throw new BadRequestException(
@@ -97,6 +100,11 @@ export class ServicoTuristaController {
         "O comprovante do Cadastur (Imagem ou PDF) é obrigatório para este tipo de serviço.",
       );
     }
+    if (dto.tipo === TipoServicoTurista.ESPORTE_LAZER && !documentoCnpjFile) {
+      throw new BadRequestException(
+        "O documento do CNPJ (Imagem ou PDF) é obrigatório para Esporte/Lazer.",
+      );
+    }
 
     // Usando o novo padrão de pastas simplificado
     const nomePastaLimpo = sanitizarNomePasta(dto.nome);
@@ -104,7 +112,7 @@ export class ServicoTuristaController {
 
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    let logoUrl, fotoUrl, comprovanteUrl;
+    let logoUrl, fotoUrl, comprovanteUrl, documentoCnpjUrl;
 
     if (logoFile) {
       const logoNome = `logo_${Date.now()}.webp`; 
@@ -144,7 +152,34 @@ export class ServicoTuristaController {
       }
     }
 
-    return this.app.create(dto, req.user.id, logoUrl, fotoUrl, comprovanteUrl);
+    if (documentoCnpjFile) {
+      const ext = path.extname(documentoCnpjFile.originalname).toLowerCase();
+
+      if (ext === ".pdf") {
+        const documentoCnpjNome = `documento_cnpj_${Date.now()}.pdf`;
+        fs.writeFileSync(
+          path.join(uploadDir, documentoCnpjNome),
+          documentoCnpjFile.buffer,
+        );
+        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
+      } else {
+        const documentoCnpjNome = `documento_cnpj_${Date.now()}.webp`;
+        await sharp(documentoCnpjFile.buffer)
+          .resize(800)
+          .webp({ quality: 80 })
+          .toFile(path.join(uploadDir, documentoCnpjNome));
+        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
+      }
+    }
+
+    return this.app.create(
+      dto,
+      req.user.id,
+      logoUrl,
+      fotoUrl,
+      comprovanteUrl,
+      documentoCnpjUrl,
+    );
   }
 
   // ==========================================
@@ -177,6 +212,7 @@ export class ServicoTuristaController {
         { name: "logo", maxCount: 1 },
         { name: "foto", maxCount: 1 },
         { name: "comprovante", maxCount: 1 },
+        { name: "documentoCnpj", maxCount: 1 },
       ],
       { storage: memoryStorage() },
     ),
@@ -190,6 +226,7 @@ export class ServicoTuristaController {
       logo?: Express.Multer.File[];
       foto?: Express.Multer.File[];
       comprovante?: Express.Multer.File[];
+      documentoCnpj?: Express.Multer.File[];
     },
   ) {
     const usuarioLogado = req.user;
@@ -201,9 +238,11 @@ export class ServicoTuristaController {
     let logoUrl: string | undefined;
     let fotoUrl: string | undefined;
     let comprovanteUrl: string | undefined;
+    let documentoCnpjUrl: string | undefined;
     const logoFile = files?.logo?.[0];
     const fotoFile = files?.foto?.[0];
     const comprovanteFile = files?.comprovante?.[0];
+    const documentoCnpjFile = files?.documentoCnpj?.[0];
 
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
@@ -247,6 +286,28 @@ export class ServicoTuristaController {
       }
     }
 
+    if (documentoCnpjFile) {
+      if (!fs.existsSync(uploadDir))
+        fs.mkdirSync(uploadDir, { recursive: true });
+      const ext = path.extname(documentoCnpjFile.originalname).toLowerCase();
+
+      if (ext === ".pdf") {
+        const documentoCnpjNome = `documento_cnpj_${Date.now()}.pdf`;
+        fs.writeFileSync(
+          path.join(uploadDir, documentoCnpjNome),
+          documentoCnpjFile.buffer,
+        );
+        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
+      } else {
+        const documentoCnpjNome = `documento_cnpj_${Date.now()}.webp`;
+        await sharp(documentoCnpjFile.buffer)
+          .resize(800)
+          .webp({ quality: 80 })
+          .toFile(path.join(uploadDir, documentoCnpjNome));
+        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
+      }
+    }
+
     return this.app.update(
       id,
       dto,
@@ -254,6 +315,7 @@ export class ServicoTuristaController {
       logoUrl,
       fotoUrl,
       comprovanteUrl,
+      documentoCnpjUrl,
     );
   }
 

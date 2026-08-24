@@ -4,10 +4,17 @@ import {
   IsNotEmpty,
   IsOptional,
   IsEnum,
+  IsArray,
+  ArrayMinSize,
   ValidateIf,
   MaxLength,
 } from "class-validator";
-import { TipoServicoTurista, TipoRoteiro } from "@prisma/client";
+import { Transform } from "class-transformer";
+import {
+  TipoServicoTurista,
+  TipoRoteiro,
+  ModalidadeEsporte,
+} from "@prisma/client";
 import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
 
 export class CreateServicoTuristaRequestDto {
@@ -96,11 +103,36 @@ export class CreateServicoTuristaRequestDto {
   })
   cnpj?: string;
 
-  @ApiProperty({ enum: TipoRoteiro, required: false })
+  @ApiProperty({
+    enum: TipoRoteiro,
+    isArray: true,
+    required: false,
+    description: "Obrigatório para Guias (pelo menos um roteiro)",
+    example: ["DE_PRAIAS", "ECOLOGICO"],
+  })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
-  @IsEnum(TipoRoteiro)
-  @IsNotEmpty({ message: "O roteiro especializado é obrigatório para Guias." })
-  roteiro?: TipoRoteiro;
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  })
+  @IsArray()
+  @ArrayMinSize(1, {
+    message: "Selecione ao menos um roteiro especializado.",
+  })
+  @IsEnum(TipoRoteiro, { each: true })
+  roteiros?: TipoRoteiro[];
 
   @ApiProperty({ required: false, example: "Português, Inglês" })
   @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
@@ -110,6 +142,40 @@ export class CreateServicoTuristaRequestDto {
     message: "Os idiomas informados são muito longos.",
   })
   idiomas?: string;
+
+  // ==========================================
+  // CAMPO ESPECÍFICO: ESPORTE/LAZER
+  // ==========================================
+  @ApiProperty({
+    enum: ModalidadeEsporte,
+    isArray: true,
+    required: false,
+    description: "Obrigatório para Esporte/Lazer (pelo menos uma modalidade)",
+    example: ["AQUATICO", "TERRESTRE"],
+  })
+  @ValidateIf((o) => o.tipo === TipoServicoTurista.ESPORTE_LAZER)
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  })
+  @IsArray()
+  @ArrayMinSize(1, {
+    message: "Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).",
+  })
+  @IsEnum(ModalidadeEsporte, { each: true })
+  modalidades?: ModalidadeEsporte[];
 
   // ==========================================
   // FICHEIROS (Tratados no Controller, mas documentados aqui)
@@ -141,4 +207,14 @@ export class CreateServicoTuristaRequestDto {
   })
   @IsOptional()
   comprovante?: any;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    description:
+      "Documento do CNPJ (Obrigatório apenas para Esporte/Lazer. PDF ou Imagem)",
+    required: false,
+  })
+  @IsOptional()
+  documentoCnpj?: any;
 }
