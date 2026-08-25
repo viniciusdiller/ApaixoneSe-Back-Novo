@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../providers/db/prisma.Service";
 import {
   IClickCounterRepository,
@@ -15,20 +16,31 @@ export class ClickCounterRepository implements IClickCounterRepository {
     pagina: string,
     data: Date,
   ): Promise<void> {
-    await this.prisma.clickCounter.upsert({
-      where: {
-        categoria_pagina_data: { categoria, pagina, data },
-      },
-      update: {
-        total: { increment: 1 },
-      },
-      create: {
-        categoria,
-        pagina,
-        data,
-        total: 1,
-      },
-    });
+    const where = { categoria_pagina_data: { categoria, pagina, data } };
+    try {
+      await this.prisma.clickCounter.upsert({
+        where,
+        update: { total: { increment: 1 } },
+        create: { categoria, pagina, data, total: 1 },
+      });
+    } catch (error) {
+      // upsert do Prisma faz SELECT e depois INSERT/UPDATE (nao e atomico no
+      // MySQL) - dois cliques concorrentes na mesma categoria+pagina+data
+      // podem ambos "nao achar" a linha e tentar criar, um deles estoura a
+      // unique constraint. Nesse caso a linha ja existe (foi o outro request
+      // que criou), so falta aplicar o increment.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        await this.prisma.clickCounter.update({
+          where,
+          data: { total: { increment: 1 } },
+        });
+        return;
+      }
+      throw error;
+    }
   }
 
   async buscarStats(
