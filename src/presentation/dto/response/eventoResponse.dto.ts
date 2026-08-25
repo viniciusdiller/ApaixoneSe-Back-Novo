@@ -38,6 +38,12 @@ export class EventoResponseDto {
   })
   fotoUrl?: string;
 
+  @ApiProperty({
+    example: false,
+    description: "Se true, o evento aparece no carrossel 'Fique Por Dentro' da home",
+  })
+  destaque!: boolean;
+
   // Novo campo: o Frontend usa isso para escolher a imagem
   @ApiProperty({ enum: Mes, example: "ABRIL" })
   mes!: Mes;

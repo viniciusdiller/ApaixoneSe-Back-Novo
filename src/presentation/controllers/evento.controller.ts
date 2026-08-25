@@ -106,6 +106,15 @@ export class EventoController {
     return this.eventoApplication.findAll();
   }
 
+  @Get("destaques")
+  @ApiOperation({
+    summary: "Lista até 4 eventos marcados como destaque, para o carrossel da home",
+  })
+  @ApiResponse({ status: 200, type: [EventoResponseDto] })
+  async findDestaques(): Promise<EventoResponseDto[]> {
+    return this.eventoApplication.findDestaques();
+  }
+
   @Get(":id")
   @ApiOperation({ summary: "Busca os detalhes de um evento pelo ID" })
   @ApiResponse({ status: 200, type: EventoResponseDto })
