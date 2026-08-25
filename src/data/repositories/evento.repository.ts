@@ -16,6 +16,7 @@ export class EventoRepository implements IEventoRepository {
     local: string;
     endereco: string | null;
     fotoUrl: string | null;
+    destaque: boolean;
     createdAt: Date;
     updatedAt: Date;
   }): Evento {
@@ -28,6 +29,7 @@ export class EventoRepository implements IEventoRepository {
         local: eventoPrisma.local,
         endereco: eventoPrisma.endereco,
         fotoUrl: eventoPrisma.fotoUrl ?? undefined,
+        destaque: eventoPrisma.destaque,
       },
       eventoPrisma.id,
       eventoPrisma.createdAt,
@@ -46,6 +48,7 @@ export class EventoRepository implements IEventoRepository {
         local: evento.local,
         endereco: evento.endereco,
         fotoUrl: evento.fotoUrl,
+        destaque: evento.destaque,
       },
     });
 
@@ -56,6 +59,17 @@ export class EventoRepository implements IEventoRepository {
   async findAll(): Promise<Evento[]> {
     const eventosPrisma = await this.prisma.eventos.findMany({
       orderBy: { data: "asc" },
+    });
+
+    return eventosPrisma.map((e) => this.toEntity(e));
+  }
+
+  // 2b. Buscar até 4 eventos em destaque, pro carrossel da home
+  async findDestaques(): Promise<Evento[]> {
+    const eventosPrisma = await this.prisma.eventos.findMany({
+      where: { destaque: true },
+      orderBy: { data: "asc" },
+      take: 4,
     });
 
     return eventosPrisma.map((e) => this.toEntity(e));
@@ -81,6 +95,7 @@ export class EventoRepository implements IEventoRepository {
         local: data.local,
         endereco: data.endereco,
         fotoUrl: data.fotoUrl,
+        destaque: data.destaque,
       },
     });
 

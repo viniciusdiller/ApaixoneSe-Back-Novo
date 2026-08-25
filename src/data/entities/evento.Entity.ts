@@ -7,6 +7,7 @@ export class Evento {
   public local: string;
   public endereco?: string | null;
   public fotoUrl?: string;
+  public destaque?: boolean;
   public createdAt?: Date;
   public updatedAt?: Date;
 
@@ -23,6 +24,7 @@ export class Evento {
     this.local = props.local;
     this.endereco = props.endereco;
     this.fotoUrl = props.fotoUrl;
+    this.destaque = props.destaque ?? false;
 
     this.id = id;
     this.createdAt = createdAt;

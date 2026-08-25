@@ -7,6 +7,8 @@ export interface IEventoRepository {
 
   findAll(): Promise<Evento[]>;
 
+  findDestaques(): Promise<Evento[]>;
+
   findById(id: string): Promise<Evento | null>;
 
   update(id: string, data: Partial<Evento>): Promise<Evento>;

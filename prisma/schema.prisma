@@ -130,6 +130,7 @@ model Eventos {
   local       String
   endereco    String?
   fotoUrl     String?
+  destaque    Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
