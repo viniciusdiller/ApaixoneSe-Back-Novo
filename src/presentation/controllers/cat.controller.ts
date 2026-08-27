@@ -134,7 +134,7 @@ export class CatController {
     if (files?.imagens && files.imagens.length > 0) {
       for (let i = 0; i < files.imagens.length; i++) {
         const file = files.imagens[i];
-        const nomeImagem = `imagem_${i}.webp`;
+        const nomeImagem = `imagem_${Date.now()}_${i}.webp`;
         await sharp(file.buffer)
           .resize(800)
           .webp({ quality: 80 })
@@ -147,7 +147,7 @@ export class CatController {
     if (files?.video && files.video.length > 0) {
       const videoFile = files.video[0];
       const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
-      const nomeVideo = `video_${ext}`;
+      const nomeVideo = `video_${Date.now()}${ext}`;
       fs.writeFileSync(path.join(uploadDir, nomeVideo), videoFile.buffer);
       videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
     }
