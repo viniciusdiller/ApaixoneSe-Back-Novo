@@ -18,15 +18,9 @@ export class CatRepository implements ICatRepository {
     return new Cat(criado);
   }
 
-  async findAll(): Promise<Cat[]> {
-    const lista = await this.prisma.cat.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return lista.map((c) => new Cat(c));
-  }
-
-  async findById(id: string): Promise<Cat | null> {
-    const c = await this.prisma.cat.findUnique({ where: { id } });
+  // Busca o primeiro (e único) registro da tabela
+  async findFirst(): Promise<Cat | null> {
+    const c = await this.prisma.cat.findFirst();
     if (!c) return null;
     return new Cat(c);
   }
@@ -37,9 +31,5 @@ export class CatRepository implements ICatRepository {
       data,
     });
     return new Cat(atualizado);
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.prisma.cat.delete({ where: { id } });
   }
 }

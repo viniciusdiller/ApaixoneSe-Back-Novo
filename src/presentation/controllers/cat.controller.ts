@@ -3,13 +3,9 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Body,
-  Param,
   UseInterceptors,
   UploadedFiles,
-  HttpCode,
-  HttpStatus,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -30,129 +26,73 @@ import { CatApplication } from "../../application/applications/cat.Application";
 import { CreateCatRequestDto } from "../dto/request/cat/createCatRequestDto";
 import { UpdateCatRequestDto } from "../dto/request/cat/updateCatRequestDto";
 
+const UPLOAD_DIR = `./uploads/cat/informacoes`;
+
+const uploadInterceptor = FileFieldsInterceptor(
+  [
+    { name: "imagens", maxCount: 10 },
+    { name: "video", maxCount: 1 },
+  ],
+  { storage: memoryStorage() },
+);
+
 @ApiTags("CAT (Centro de Atendimento ao Turista)")
 @Controller("cat")
 export class CatController {
   constructor(private readonly app: CatApplication) {}
 
+  // ──────────────────────────────────────────────────────────
+  // POST /cat  →  Configura o CAT pela 1ª vez (ADMIN). 409 se já existir.
+  // ──────────────────────────────────────────────────────────
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Cria informações do CAT com Múltiplas Imagens e 1 Vídeo",
+    summary:
+      "Configura o CAT pela primeira vez com múltiplas imagens e 1 vídeo (Apenas Admin). Retorna 409 se já existir.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateCatRequestDto })
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: "imagens", maxCount: 10 },
-        { name: "video", maxCount: 1 },
-      ],
-      { storage: memoryStorage() },
-    ),
-  )
+  @UseInterceptors(uploadInterceptor)
   async create(
     @Body() dto: CreateCatRequestDto,
     @Req() req: any,
     @UploadedFiles()
     files?: { imagens?: Express.Multer.File[]; video?: Express.Multer.File[] },
   ) {
-    const uploadDir = `./uploads/cat/informacoes`;
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-    let imagensUrl: string[] = [];
-    let videoUrl: string | undefined = undefined;
-
-    // 1. PROCESSAR MÚLTIPLAS IMAGENS
-    if (files?.imagens && files.imagens.length > 0) {
-      for (let i = 0; i < files.imagens.length; i++) {
-        const file = files.imagens[i];
-        const nomeImagem = `imagem_${Date.now()}_${i}.webp`;
-        await sharp(file.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, nomeImagem));
-        imagensUrl.push(`/uploads/cat/informacoes/${nomeImagem}`);
-      }
-    }
-
-    // 2. PROCESSAR O VÍDEO
-    if (files?.video && files.video.length > 0) {
-      const videoFile = files.video[0];
-      const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
-      const nomeVideo = `video_${Date.now()}${ext}`;
-      fs.writeFileSync(path.join(uploadDir, nomeVideo), videoFile.buffer);
-      videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
-    }
-
+    const imagensUrl = await this.processarImagens(files?.imagens);
+    const videoUrl = this.processarVideo(files?.video);
     return this.app.create(dto, req.user, imagensUrl, videoUrl);
   }
 
+  // ──────────────────────────────────────────────────────────
+  // GET /cat  →  Retorna o único registro (404 se não configurado)
+  // ──────────────────────────────────────────────────────────
   @Get()
-  @ApiOperation({ summary: "Lista todas as informações do CAT" })
-  async findAll() {
-    return this.app.findAll();
+  @ApiOperation({ summary: "Retorna as informações do CAT" })
+  async findOne() {
+    return this.app.findOne();
   }
 
-  @Get(":id")
-  @ApiOperation({ summary: "Busca uma informação do CAT pelo ID" })
-  async findById(@Param("id") id: string) {
-    return this.app.findById(id);
-  }
-
-  @Put(":id")
+  // ──────────────────────────────────────────────────────────
+  // PUT /cat  →  Atualiza o único registro (ADMIN)
+  // ──────────────────────────────────────────────────────────
+  @Put()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza uma informação do CAT (Apenas Admin)" })
+  @ApiOperation({ summary: "Atualiza as informações do CAT (Apenas Admin)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateCatRequestDto })
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      // 👈 Atualizado para o padrão do create
-      [
-        { name: "imagens", maxCount: 10 },
-        { name: "video", maxCount: 1 },
-      ],
-      { storage: memoryStorage() },
-    ),
-  )
+  @UseInterceptors(uploadInterceptor)
   async update(
-    @Param("id") id: string,
     @Body() dto: UpdateCatRequestDto,
     @Req() req: any,
     @UploadedFiles()
     files?: { imagens?: Express.Multer.File[]; video?: Express.Multer.File[] },
   ) {
-    const uploadDir = `./uploads/cat/informacoes`;
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    const novasImagensUrl = await this.processarImagens(files?.imagens);
+    const videoUrl = this.processarVideo(files?.video);
 
-    let imagensUrl: string[] = [];
-    let videoUrl: string | undefined = undefined;
-
-    // 1. PROCESSAR NOVAS IMAGENS (Se enviadas)
-    if (files?.imagens && files.imagens.length > 0) {
-      for (let i = 0; i < files.imagens.length; i++) {
-        const file = files.imagens[i];
-        const nomeImagem = `imagem_${Date.now()}_${i}.webp`;
-        await sharp(file.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, nomeImagem));
-        imagensUrl.push(`/uploads/cat/informacoes/${nomeImagem}`);
-      }
-    }
-
-    // 2. PROCESSAR O NOVO VÍDEO (Se enviado)
-    if (files?.video && files.video.length > 0) {
-      const videoFile = files.video[0];
-      const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
-      const nomeVideo = `video_${Date.now()}${ext}`;
-      fs.writeFileSync(path.join(uploadDir, nomeVideo), videoFile.buffer);
-      videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
-    }
-
-    // 3. PARSEAR A ORDEM FINAL DAS IMAGENS (existentes mantidas + novas), se enviada
     let ordem: string[] | undefined;
     if (dto.ordem) {
       try {
@@ -163,15 +103,41 @@ export class CatController {
       }
     }
 
-    return this.app.update(id, dto, req.user, imagensUrl, videoUrl, ordem);
+    return this.app.update(dto, req.user, novasImagensUrl, videoUrl, ordem);
   }
 
-  @Delete(":id")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta uma informação do CAT (Apenas Admin)" })
-  async delete(@Param("id") id: string, @Req() req: any) {
-    return this.app.delete(id, req.user);
+  // ──────────────────────────────────────────────────────────
+  // Helper: processa as imagens da galeria (→ WebP, nome único)
+  // ──────────────────────────────────────────────────────────
+  private async processarImagens(
+    files?: Express.Multer.File[],
+  ): Promise<string[]> {
+    if (!files || files.length === 0) return [];
+    if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+    const urls: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const nomeImagem = `imagem_${Date.now()}_${i}.webp`;
+      await sharp(files[i].buffer)
+        .resize(800)
+        .webp({ quality: 80 })
+        .toFile(path.join(UPLOAD_DIR, nomeImagem));
+      urls.push(`/uploads/cat/informacoes/${nomeImagem}`);
+    }
+    return urls;
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Helper: processa o vídeo (nome único)
+  // ──────────────────────────────────────────────────────────
+  private processarVideo(files?: Express.Multer.File[]): string | undefined {
+    if (!files || files.length === 0) return undefined;
+    if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+    const videoFile = files[0];
+    const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
+    const nomeVideo = `video_${Date.now()}${ext}`;
+    fs.writeFileSync(path.join(UPLOAD_DIR, nomeVideo), videoFile.buffer);
+    return `/uploads/cat/informacoes/${nomeVideo}`;
   }
 }
