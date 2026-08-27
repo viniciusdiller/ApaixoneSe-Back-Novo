@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  ConflictException,
 } from "@nestjs/common";
 import { CatRepository } from "../../data/repositories/cat.repository";
 import { Cat } from "../../data/entities/cat.Entity";
@@ -14,6 +15,7 @@ import * as path from "path";
 export class CatApplication {
   constructor(private readonly repo: CatRepository) {}
 
+  // ─── CREATE (apenas se ainda não existir nenhum registro) ───────────────────
   async create(
     data: any,
     usuarioLogado: IUsuarioLogado,
@@ -22,36 +24,36 @@ export class CatApplication {
   ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
-        "Apenas administradores podem criar informações do CAT.",
+        "Apenas administradores podem configurar as informações do CAT.",
       );
     }
 
-    const catExistente = await this.repo.findAll();
-    if (catExistente.length > 0) {
-      throw new BadRequestException(
-        "Já existe uma informação do CAT cadastrada. Por favor, edite a informação atual em vez de criar uma nova.",
+    const existente = await this.repo.findFirst();
+    if (existente) {
+      throw new ConflictException(
+        "As informações do CAT já foram configuradas. Use PUT para atualizá-las.",
       );
     }
+
     const dadosLimpos: any = { ...data };
     delete dadosLimpos.imagens;
     delete dadosLimpos.video;
+    delete dadosLimpos.ordem;
 
     const novo = new Cat({ ...dadosLimpos, imagensUrl, videoUrl });
     return this.repo.save(novo);
   }
 
-  async findAll() {
-    return this.repo.findAll();
-  }
-
-  async findById(id: string) {
-    const c = await this.repo.findById(id);
-    if (!c) throw new NotFoundException("Informação do CAT não encontrada.");
+  // ─── GET (retorna o único registro) ─────────────────────────────────────────
+  async findOne() {
+    const c = await this.repo.findFirst();
+    if (!c)
+      throw new NotFoundException("As informações do CAT ainda não foram configuradas.");
     return c;
   }
 
+  // ─── UPDATE (atualiza o único registro — ADMIN) ─────────────────────────────
   async update(
-    id: string,
     data: any,
     usuarioLogado: IUsuarioLogado,
     novasImagensUrl?: string[],
@@ -60,69 +62,69 @@ export class CatApplication {
   ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
-        "Apenas administradores podem alterar informações do CAT.",
+        "Apenas administradores podem alterar as informações do CAT.",
       );
     }
 
-    const existente = await this.repo.findById(id);
+    const existente = await this.repo.findFirst();
     if (!existente)
-      throw new NotFoundException("Informação do CAT não encontrada.");
+      throw new NotFoundException(
+        "As informações do CAT ainda não foram configuradas. Use POST primeiro.",
+      );
 
     const dadosAtualizacao: any = { ...data };
     delete dadosAtualizacao.imagens;
     delete dadosAtualizacao.video;
     delete dadosAtualizacao.ordem;
 
-    if (videoUrl) dadosAtualizacao.videoUrl = videoUrl;
+    if (videoUrl) {
+      this.removerArquivo(existente.videoUrl);
+      dadosAtualizacao.videoUrl = videoUrl;
+    }
+
+    const antigas: string[] = Array.isArray(existente.imagensUrl)
+      ? existente.imagensUrl
+      : [];
 
     if (ordem && ordem.length > 0) {
-      // Reconstrói a lista final combinando existentes mantidas (na nova ordem) + novas enviadas
-      let proximoIndice = 0;
-      const urlsFinais = ordem.map((item) =>
-        item === "__new__" ? novasImagensUrl?.[proximoIndice++] : item,
-      ).filter((url): url is string => !!url);
+      // Toda URL "existente" enviada no `ordem` precisa realmente pertencer ao
+      // registro atual — o client não pode injetar caminho arbitrário que vira
+      // estado persistido em `imagensUrl`.
+      const urlInvalida = ordem.find(
+        (item) => item !== "__new__" && !antigas.includes(item),
+      );
+      if (urlInvalida) {
+        throw new BadRequestException(
+          "A ordem enviada referencia uma imagem que não pertence ao registro.",
+        );
+      }
 
-      const antigas: string[] = Array.isArray(existente.imagensUrl)
-        ? existente.imagensUrl
-        : [];
+      // Reconstrói a lista final: existentes mantidas (na nova ordem) + novas enviadas
+      let proximoIndice = 0;
+      const urlsFinais = ordem
+        .map((item) =>
+          item === "__new__" ? novasImagensUrl?.[proximoIndice++] : item,
+        )
+        .filter((url): url is string => !!url);
+
       antigas
         .filter((url) => !urlsFinais.includes(url))
         .forEach((url) => this.removerArquivo(url));
 
       dadosAtualizacao.imagensUrl = urlsFinais;
     } else if (novasImagensUrl && novasImagensUrl.length > 0) {
-      // Sem informação de ordem (cliente antigo): mantém o comportamento anterior
+      // Sem informação de ordem (cliente antigo): substitui a galeria inteira
+      antigas.forEach((url) => this.removerArquivo(url));
       dadosAtualizacao.imagensUrl = novasImagensUrl;
     }
 
-    return this.repo.update(id, dadosAtualizacao);
+    return this.repo.update(existente.id!, dadosAtualizacao);
   }
 
+  // ─── Helper: remove arquivo físico do disco com segurança ───────────────────
   private removerArquivo(url?: string | null): void {
     if (!url) return;
     const filePath = path.join(".", url);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  }
-
-  async delete(id: string, usuarioLogado: IUsuarioLogado) {
-    if (usuarioLogado.perfil !== "ADMIN") {
-      throw new ForbiddenException(
-        "Apenas administradores podem apagar informações do CAT.",
-      );
-    }
-
-    const existente = await this.repo.findById(id);
-    if (!existente)
-      throw new NotFoundException("Informação do CAT não encontrada.");
-
-    await this.repo.delete(id);
-
-    // Apagar fisicamente a pasta e o arquivo
-    if (existente.imagensUrl && existente.imagensUrl.length > 0) {
-      const pastaFisica = path.join(".", path.dirname(existente.imagensUrl[0]));
-      if (fs.existsSync(pastaFisica)) {
-        fs.rmSync(pastaFisica, { recursive: true, force: true });
-      }
-    }
   }
 }
