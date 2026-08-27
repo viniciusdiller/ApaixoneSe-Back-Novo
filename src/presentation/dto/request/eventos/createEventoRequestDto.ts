@@ -4,8 +4,10 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
+  IsBoolean,
   MaxLength,
 } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class CreateEventoRequestDto {
   @ApiProperty({
@@ -70,4 +72,14 @@ export class CreateEventoRequestDto {
     description: 'Imagem de fundo do evento enviada no campo "foto" (compatível com "imagem")',
   })
   foto?: any;
+
+  @ApiPropertyOptional({
+    example: "true",
+    description:
+      "Se marcado, o evento entra no carrossel 'Fique Por Dentro' da home (limite de 4 eventos em destaque simultâneos)",
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === "true")
+  @IsBoolean()
+  destaque?: boolean;
 }

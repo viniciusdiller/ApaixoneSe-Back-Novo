@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  ConflictException,
 } from "@nestjs/common";
 import { EventoRepository } from "../../data/repositories/evento.repository";
 import { Evento } from "../../data/entities/evento.Entity";
@@ -11,6 +12,8 @@ import { EventoResponseDto } from "../../presentation/dto/response/eventoRespons
 import { UpdateEventoRequestDto } from "../../presentation/dto/request/eventos/updateEventoRequestDto";
 import { Mes } from "@prisma/client";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
+
+const MAX_DESTAQUES = 4;
 
 @Injectable()
 export class EventoApplication {
@@ -60,6 +63,15 @@ export class EventoApplication {
         "Apenas administradores podem criar eventos.",
       );
 
+    if (dto.destaque) {
+      const atuais = await this.eventoRepository.findDestaques();
+      if (atuais.length >= MAX_DESTAQUES) {
+        throw new ConflictException(
+          `O limite de ${MAX_DESTAQUES} eventos em destaque já foi atingido. Remova um antes de adicionar outro.`,
+        );
+      }
+    }
+
     const dataConvertida = new Date(dto.data);
     const dataFimConvertida = dto.dataFim ? new Date(dto.dataFim) : undefined;
     const novoEvento = this.construirEventoValidado({
@@ -70,6 +82,7 @@ export class EventoApplication {
       local: dto.local,
       endereco: dto.endereco,
       fotoUrl,
+      destaque: dto.destaque,
     });
 
     const eventoSalvo = await this.eventoRepository.save(novoEvento);
@@ -78,6 +91,12 @@ export class EventoApplication {
 
   async findAll(): Promise<EventoResponseDto[]> {
     const eventos = await this.eventoRepository.findAll();
+    return Promise.all(eventos.map((e) => this.mapToResponseDto(e)));
+  }
+
+  // Dado público, sem checagem de ADMIN — alimenta o carrossel da home.
+  async findDestaques(): Promise<EventoResponseDto[]> {
+    const eventos = await this.eventoRepository.findDestaques();
     return Promise.all(eventos.map((e) => this.mapToResponseDto(e)));
   }
 
@@ -106,6 +125,19 @@ export class EventoApplication {
     const dataFimAtualizada = dto.dataFim
       ? new Date(dto.dataFim)
       : evento.dataFim;
+    const destaqueFinal = dto.destaque ?? evento.destaque;
+
+    // só checa o limite ao ligar destaque num evento que ainda não era
+    // destaque — senão re-salvar um evento já-destaque falsamente
+    // acusaria limite atingido contra ele mesmo.
+    if (destaqueFinal && !evento.destaque) {
+      const atuais = await this.eventoRepository.findDestaques();
+      if (atuais.length >= MAX_DESTAQUES) {
+        throw new ConflictException(
+          `O limite de ${MAX_DESTAQUES} eventos em destaque já foi atingido. Remova um antes de adicionar outro.`,
+        );
+      }
+    }
 
     // Reaproveita a regra de negócio da entidade (ex.: dataFim >= data)
     // para validar o resultado final antes de persistir.
@@ -118,6 +150,7 @@ export class EventoApplication {
         local: dto.local ?? evento.local,
         endereco: dto.endereco ?? evento.endereco,
         fotoUrl: fotoUrl ?? evento.fotoUrl,
+        destaque: destaqueFinal,
       },
       evento.id,
     );
@@ -130,6 +163,7 @@ export class EventoApplication {
       data: dto.data ? dataAtualizada : undefined,
       dataFim: dto.dataFim ? dataFimAtualizada : undefined,
       fotoUrl,
+      destaque: dto.destaque,
     };
 
     const eventoAtualizado = await this.eventoRepository.update(
@@ -162,6 +196,7 @@ export class EventoApplication {
       local: evento.local,
       endereco: evento.endereco ?? null,
       fotoUrl: evento.fotoUrl,
+      destaque: evento.destaque ?? false,
       mes: this.getMesEnum(evento.data), // Injetamos o mês aqui
       createdAt: evento.createdAt!,
     };
